@@ -1,0 +1,34 @@
+{
+    "name": "endyjasmi/cypher",
+    "description": "Neo4j Cypher Adapter for PHP",
+    "keywords": ["laravel", "database", "neo4j", "cypher", "query", "graph", "data"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Endy Jasmi",
+            "email": "endyjasmi@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "endyjasmi@gmail.com",
+        "issues": "https://github.com/endyjasmi/cypher/issues",
+        "source": "https://github.com/endyjasmi/cypher"
+    },
+	"autoload": {
+		"psr-4": {
+			"EndyJasmi\\": "src/"
+		}
+	},
+    "require": {
+        "php": ">=5.4.0",
+    	"guzzlehttp/guzzle": "4.*",
+        "illuminate/support": "4.*"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "1.*",
+        "phpunit/phpunit": "4.*",
+        "mockery/mockery": "0.*"
+    }
+}

@@ -1,0 +1,115 @@
+{
+    "nodeTypes": [
+        {
+            "name": "Part",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "Document",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "File",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "Factory",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        }, {
+            "name": "Tool",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "Organisation",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "User",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        },{
+            "name": "Tractor",
+            "properties": [
+                {
+                    "name": "state",
+                    "type": "state"
+                }],
+            "icon": ""
+        }
+    ],
+    "edgeTypes": [
+         {
+            "name": "consumes",
+            "behavior": "float",
+            "source": "Part",
+            "type": "nton",
+            "target": "Part"
+        }, {
+            "name": "referencedBy",
+            "behavior": "float",
+            "source": "Part",
+            "type": "nton",
+            "target": "partBom"
+        }, {
+            "name": "contains",
+            "behavior": "fixed",
+            "source": "Part",
+            "type": "nton",
+            "target": "partBom"
+        }, {
+            "name": "subscribeTo",
+            "behavior": "float",
+            "source": "User",
+            "type": "nton",
+            "target": ""
+        }, {
+            "name": "created",
+            "behavior": "float",
+            "source": "User",
+            "type": "nton",
+            "target": ""
+        }, {
+            "name": "comments",
+            "behavior": "float",
+            "source": "comment",
+            "type": "nton",
+            "target": ""
+        }, {
+            "name": "handlesChangeOf",
+            "behavior": "float",
+            "source": "ECO",
+            "type": "nton",
+            "target": ["Part", "Document"]
+        }
+    ]
+}
+
