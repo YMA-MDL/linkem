@@ -17,6 +17,7 @@ and open the template in the editor.
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon"       type="image/png"       href="./favicon.ico">
         <title></title>
 
         <!-- Latest compiled and minified CSS -->
@@ -41,7 +42,9 @@ and open the template in the editor.
             include 'modules/rightpanel.php'
             ?>
         </div>
-
+        <?php
+        include 'modules/modals.php'
+        ?>
 
     </body>
 

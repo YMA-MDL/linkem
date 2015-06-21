@@ -31,11 +31,13 @@ function nodeTemplateList(DOM) {
 
     this.nodeTemplateUsageList = $(".nodeTemplateList");
 
+    this.nodeTemplateUsageListWithEmpty = $(".nodeTemplatePropListWithEmpty");
+    
     this.pictureDomSelector = this.DOM.find("#nodeTemplateImage");
 
     this.noImagePicture = "./images/nodeTypes/noimage128.png";
 
-    this.templatePropertiesDOM = that.DOM.find("#TemplateProperties");
+    this.templatePropertiesDOM = that.DOM.find(".TemplateProperties");
 
     this.propertyTypes = [
         "string", "date", "dateTime", "integer"
@@ -55,30 +57,34 @@ function nodeTemplateList(DOM) {
         }).success(function (data) {
             var nodeTemplateJson = {
                 "properties": {
-                    "_name": templateName
+                    "_name": templateName,
+                    "_label": "_name"
                 }
             };
             that.nodeTemplates.push(new nodeTemplate(nodeTemplateJson));
             that.loadTemplates();
-            standardNotification("new Template Added : " + templateName, "success");
+            standardNotification("new node template added : " + templateName, "success");
         }).fail(function (err) {
             console.log(err);
         });
     };
 
-    this.addNewEdgeTemplate = function (templateName, sourceType, targetType) {
+    this.addNewEdgeTemplate = function (templateName) {
         $.post(ajaxUrl, {
             action: "edge_template_add",
-            name: "templateName"
+            name: templateName
         }).success(function (data) {
             var edgeTemplateJson = {
                 "properties": {
                     "_name": templateName,
-                    "_sourceType": sourceType,
-                    "_targetType": targetType
+                    "_label": "_name",
+                    "_sourceType": "",
+                    "_targetType": ""
                 }
             };
-            that.edgeTemplates.push(new nodeTemplate(edgeTemplateJson));
+            that.edgeTemplates.push(new edgeTemplate(edgeTemplateJson));
+            that.loadTemplates();
+            standardNotification("new edge tTemplate added : " + templateName, "success");
         }).fail(function (err) {
             console.log(err);
         });
@@ -94,7 +100,9 @@ function nodeTemplateList(DOM) {
             options += "<option value='" + i + "'>" + that.nodeTemplates[i].name + "</option>";
         }
         that.nodeTemplateList.html(options);
-        that.nodeTemplateList.prepend('<option selected id="emptyOption"></option>');
+        that.nodeTemplateList.prepend('<option selected value="emptyOption"></option>');
+        that.nodeTemplateUsageListWithEmpty.html(options);
+        that.nodeTemplateUsageListWithEmpty.prepend('<option selected value="emptyOption"></option>');
         that.nodeTemplateUsageList.html(options);
     };
 
@@ -104,7 +112,7 @@ function nodeTemplateList(DOM) {
             options += "<option value='" + i + "'>" + that.edgeTemplates[i].name + "</option>";
         }
         that.edgeTemplateList.html(options);
-        that.edgeTemplateList.prepend('<option selected id="emptyOption"></option>');
+        that.edgeTemplateList.prepend('<option selected value="emptyOption"></option>');
     };
 
 
@@ -112,9 +120,11 @@ function nodeTemplateList(DOM) {
         $.post(ajaxUrl, {
             action: "templates_load"
         }).success(function (data) {
+            that.nodeTemplates = [];
             for (var i = 0; i < data.content_nodes.length; i++) {
                 that.nodeTemplates.push(new nodeTemplate(data.content_nodes[i]));
             }
+            that.edgeTemplates = [];
             for (var i = 0; i < data.content_edges.length; i++) {
                 that.edgeTemplates.push(new edgeTemplate(data.content_edges[i]));
             }
@@ -153,51 +163,119 @@ function nodeTemplateList(DOM) {
     this.addEdgeButton.click(function () {
         var edgeTemplateName = prompt("Please enter the edge template name", "");
         if (edgeTemplateName != null) {
-            that.addNewEdgeTemplate(edgeTemplateName, "", "");
+            that.addNewEdgeTemplate(edgeTemplateName);
         }
     });
 
     this.nodeTemplateList.change(function () {
         var selection = $(this).val();
-        // fill name
-        that.DOM.find("#TemplateName").val(that.nodeTemplates[selection].name);
-        // fill properties
-        /// build property type list
+        $("#templateNodeSettings").removeClass("hidden");
+        $("#templateEdgeSettings").addClass("hidden");
+        if (selection === "emptyOption") {
+            // empty name
+            that.DOM.find("#nodeTemplateName").val("");
+            // empty properties
+            that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
+            // empty image
+            that.pictureDomSelector.attr("src", that.noImagePicture);
+        } else {
+            // fill name
+            that.DOM.find("#nodeTemplateName").val(that.nodeTemplates[selection].name);
+            
+            // fill label
+            var labelSelectionList = '';
+            for  (var key in that.nodeTemplates[selection].properties) {
+                labelSelectionList += "<option value='"+key+"'>"+key+"</option>";
+            }
+            that.DOM.find("#nodeLabelSelection").html(labelSelectionList);
+            // set label selected
+            
+            // fill properties
+            /// build property type list
 
-        /// load existing properties
-        that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
-        var object = that.nodeTemplates[selection].properties;
-        for (var key in object) {
-            if (object.hasOwnProperty(key)) {
-                if ((key !== 'name') && !(key.startsWith('_'))) {
-                    that.addPropertyEntry(key, object[key]);
+            /// load existing properties
+            that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
+            var object = that.nodeTemplates[selection].properties;
+            for (var key in object) {
+                if (object.hasOwnProperty(key)) {
+                    if (!(key.startsWith('_'))) {
+                        that.addPropertyEntry(key, object[key]);
+                    }
                 }
             }
+            that.templatePropertiesDOM.append("<button class='btn btn-success btn-block col-md-12 addTemplateProperty' >add property</button>");
+            that.DOM.find(".addTemplateProperty").click(function () {
+                var nodeTemplatePropName = prompt("Please enter a property name", "");
+                if (nodeTemplatePropName != null) {
+                    that.nodeTemplates[that.selected.id].addNewProperty(nodeTemplatePropName);
+                    that.addPropertyEntry(nodeTemplatePropName, 'string');
+                }
+            });
+
+            // set as seleced
+            that.selected = {
+                type: "node",
+                id: selection,
+                selected: true
+            };
+
+            // fill images
+            that.pictureDomSelector.attr("src", that.nodeTemplates[selection].image);
         }
-        that.templatePropertiesDOM.append("<button class='btn btn-success btn-block col-md-12' id='addProperty'>add property</button>");
-        that.DOM.find("#addProperty").click(function () {
-            var nodeTemplatePropName = prompt("Please enter a property name", "");
-            if (nodeTemplatePropName != null) {
-                that.nodeTemplates[that.selected.id].addNewProperty(nodeTemplatePropName);
-                that.addPropertyEntry(nodeTemplatePropName, 'string');
-            }
-        });
-
-        // set as seleced
-        that.selected = {
-            type: "node",
-            id: selection,
-            selected: true
-        };
-
-        // fill images
-        that.pictureDomSelector.attr("src", that.nodeTemplates[selection].image);
     });
 
 
 
     this.edgeTemplateList.change(function () {
+        var selection = $(this).val();
+        $("#templateNodeSettings").addClass("hidden");
+        $("#templateEdgeSettings").removeClass("hidden");
+        if (selection === "emptyOption") {
+            // empty name
+            that.DOM.find("#TemplateName").val("");
+            // empty properties
+            that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
+        } else {
+            // fill name
+            that.DOM.find("#edgeTemplateName").val(that.edgeTemplates[selection].name);
+            // fill label
+            var labelSelectionList = '';
+           for  (var key in that.edgeTemplates[selection].properties) {
+                labelSelectionList += "<option value='"+key+"'>"+key+"</option>";
+            }
+            that.DOM.find("#edgeLabelSelection").html(labelSelectionList);
+            that.DOM.find("#edgeTemplateSource").val(that.edgeTemplates[selection].source);
+            that.DOM.find("#edgeTemplateTarget").val(that.edgeTemplates[selection].target);
+            // fill properties
+            /// build property type list
 
+            /// load existing properties
+            that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
+            var object = that.edgeTemplates[selection].properties;
+            for (var key in object) {
+                if (object.hasOwnProperty(key)) {
+                    if (!(key.startsWith('_'))) {
+                        that.addPropertyEntry(key, object[key]);
+                    }
+                }
+            }
+            that.templatePropertiesDOM.append("<button class='btn btn-success btn-block col-md-12 addTemplateProperty' >add property</button>");
+            that.DOM.find(".addTemplateProperty").click(function () {
+                var edgeTemplatePropName = prompt("Please enter a property name", "");
+                if (edgeTemplatePropName != null) {
+                    that.edgeTemplates[that.selected.id].addNewProperty(edgeTemplatePropName);
+                    that.addPropertyEntry(edgeTemplatePropName, 'string');
+                }
+            });
+
+            // set as seleced
+            that.selected = {
+                type: "edge",
+                id: selection,
+                selected: true
+            };
+
+        }
     });
 
 
@@ -211,7 +289,7 @@ function nodeTemplateList(DOM) {
                     updateGraphStyleSheetImages();
                     for (var i = 0; i < graphViews.length; i++) {
                         console.log("update stylesheet");
-                        
+
                         graphViews[i].cy.style(graphStylesheet);
                     }
                     that.pictureDomSelector.attr("src", InkBlobs[0].url);
@@ -273,8 +351,6 @@ function nodeTemplate(json) {
     };
 
     this.updatePicture = function (imageURL) {
-
-        console.log(imageURL);
         $.post(ajaxUrl, {
             action: "node_template_updateImage",
             imageUrl: imageURL,
@@ -299,7 +375,11 @@ function edgeTemplate(json) {
 
     this.properties = json;
 
-    this.name = json.name;
+    this.name = json._name;
+    
+    this.source = json._source;
+    
+    this.target = json._target;
 
     // functions
 
@@ -313,7 +393,17 @@ function edgeTemplate(json) {
         });
     };
 
+    this.addNewProperty = function (propertyName) {
+        $.post(ajaxUrl, {
+            action: "edge_template_addProperty",
+            propertyName: propertyName,
+            nodeId: that.properties._id
+        }).success(function (data) {
 
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
 
 }
 

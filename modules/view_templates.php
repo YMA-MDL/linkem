@@ -30,19 +30,19 @@ $json = json_decode($data, true);
 
 
     </div>
-    <div class="panel-group" id="templateEltSettings" role="tablist" aria-multiselectable="true">
+    <div class="panel-group" id="templateNodeSettings" role="tablist" aria-multiselectable="true">
         <div class="panel panel-info">
-            <div class="panel-heading"  role="tab" id="templateEltSettings_definition">
+            <div class="panel-heading"  role="tab" id="templateNodeSettings_definition">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#templateEltSettings" href="#collapseEltSettings_definition" aria-expanded="true" aria-controls="collapseEltSettings_definition">
+                    <a data-toggle="collapse" data-parent="#templateNodeSettings" href="#collapseNodeSettings_definition" aria-expanded="true" aria-controls="collapseNodeSettings_definition">
                         Definition
                     </a>
                 </h4>
             </div>
-            <div id="collapseEltSettings_definition" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateEltSettings_definition">
+            <div id="collapseNodeSettings_definition" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateNodeSettings_definition">
                 <div class="panel-body">
                     <label>Name</label>
-                    <input type="text" class="form-control" id="TemplateName" />
+                    <input type="text" class="form-control" id="nodeTemplateName" />
 
                     <label>Label</label>
                     <select class="form-control nodeTemplatePropList" id="nodeLabelSelection">
@@ -53,35 +53,80 @@ $json = json_decode($data, true);
         </div>
 
         <div class="panel panel-info">
-            <div class="panel-heading"  role="tab" id="templateEltSettings_properties">
+            <div class="panel-heading"  role="tab" id="templateNodeSettings_properties">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#templateEltSettings" href="#collapseEltSettings_properties" aria-expanded="true" aria-controls="collapseEltSettings_properties">
+                    <a data-toggle="collapse" data-parent="#templateNodeSettings" href="#collapseNodeSettings_properties" aria-expanded="true" aria-controls="collapseNodeSettings_properties">
                         Properties
                     </a>
                 </h4>
             </div>
-            <div id="collapseEltSettings_properties" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateEltSettings_properties">
-                <div class="panel-body" id="TemplateProperties">
+            <div id="collapseNodeSettings_properties" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateNodeSettings_properties">
+                <div class="panel-body TemplateProperties" >
 
                 </div>
             </div>
         </div>
 
         <div class="panel panel-info">
-            <div class="panel-heading"  role="tab" id="templateEltSettings_Image">
+            <div class="panel-heading"  role="tab" id="templateNodeSettings_Image">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#templateEltSettings" href="#collapseEltSettings_Image" aria-expanded="true" aria-controls="collapseEltSettings_Image">
+                    <a data-toggle="collapse" data-parent="#templateNodeSettings" href="#collapseNodeSettings_Image" aria-expanded="true" aria-controls="collapseNodeSettings_Image">
                         Image
                     </a>
                 </h4>
             </div>
-            <div id="collapseEltSettings_Image" class="panel-collapse collapse" role="tabpanel" aria-labelledby="templateEltSettings_Image">
+            <div id="collapseNodeSettings_Image" class="panel-collapse collapse" role="tabpanel" aria-labelledby="templateNodeSettings_Image">
                 <div class="panel-body">
                     <div class="col-xs-12 col-md-12">
                         <a href="#" class="thumbnail">
                             <img src="./images/nodeTypes/noimage128.png" id="nodeTemplateImage" src alt="...">
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-group hidden" id="templateEdgeSettings" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-info">
+            <div class="panel-heading"  role="tab" id="templateEdgeSettings_definition">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#templateEdgeSettings" href="#collapseEdgeSettings_definition" aria-expanded="true" aria-controls="collapseEdgeSettings_definition">
+                        Definition
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseEdgeSettings_definition" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateEdgeSettings_definition">
+                <div class="panel-body">
+                    <label>Name</label>
+                    <input type="text" class="form-control" id="edgeTemplateName" />
+
+                    <label>Label</label>
+                    <select class="form-control nodeTemplatePropList" id="edgeLabelSelection">
+                        <option selected id="emptyOption"></option>
+                    </select>
+                    <label>Source</label>
+                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateSource">
+                        <option selected id="emptyOption"></option>
+                    </select>
+                    <label>Target</label>
+                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateTarget">
+                        <option selected id="emptyOption"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading"  role="tab" id="templateEdgeSettings_properties">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#templateEdgeSettings" href="#collapseEdgeSettings_properties" aria-expanded="true" aria-controls="collapseEdgeSettings_properties">
+                        Properties
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseEdgeSettings_properties" class="panel-collapse collapse " role="tabpanel" aria-labelledby="templateEdgeSettings_properties">
+                <div class="panel-body TemplateProperties" >
+
                 </div>
             </div>
         </div>

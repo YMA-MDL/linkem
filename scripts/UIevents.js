@@ -66,6 +66,10 @@ $("#createItemOnView").click(function () {
     activeGraph.selectNode(newNode.id);
 });
 
+$("#searchNodesByType").click(function(){
+    
+});
+
 // disable typing
 $('.notyping').keydown(function () {
     //code to not allow any changes to be made to input field

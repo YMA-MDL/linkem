@@ -13,4 +13,26 @@ and open the template in the editor.
     border: dotted 1px #4e5d6c;
     border-radius: 8px;
     margin-top: 10px;
+    position: relative;
+}
+
+.switchGridGraph.graphState{
+    z-index: 1000;
+    height: 48px;
+    width: 48px;
+    position: absolute;
+    top: 60px;
+    right: 25px;
+    background: url("../images/gridswitch.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    border-radius: 5px;
+    border: solid 1px black;
+}
+.switchGridGraph.gridState{
+    background: url("../images/gridswitch.png");
+}
+.switchGridGraph:hover{
+    border: solid 2px red;
 }

@@ -224,6 +224,7 @@ function Graph() {
             $('#graphTabHeadersList a[href="#' + tabDomId + '"]').tab('show');
         }, 500);
         $("#createItemOnView").removeClass("disabled");
+        $("#searchNodesByType").removeClass("disabled");
 
     };
 
