@@ -9,12 +9,19 @@ ajaxUrl = "ajax/Ajax.php";
  * Node Class
  */
 
-function Node() {
+function Node(nodeType) {
 
+    // properties
+    
     var that = this;
 
     this.properties = {};
-    // initialize
+    
+    this.type = nodeType;
+    
+    // functions
+    
+    /// initialize
     this.createInDb = function () {
         $.post(ajaxUrl, {
             action: "node_add",
@@ -30,6 +37,18 @@ function Node() {
         });
     };
 
+    this.updateTemplateProperties = function(){
+        for (var i = 0; i < nodeTemplateList.nodeTemplates.length; i++) {
+            if (nodeTemplateList.nodeTemplates[i].name === that.type){
+                for (var key in  nodeTemplateList.nodeTemplates[i].properties) {
+                    if (!(that.properties.hasOwnProperty(key))&&(!key.startsWith("_"))&&(key !== 'name')&&(key !== 'image')){
+                        that.properties[key] = '';
+                    }
+                }
+            }
+        }  
+    };
+    
     this.createId = function () {
         that.id = guid();
     };
@@ -38,10 +57,6 @@ function Node() {
         that.id = that.properties.uniqueId;
     };
     
-
-    this.setType = function (nodeType) {
-        that.type = nodeType;
-    };
 
     this.addToGraph = function (graph) {
         graph.graphAddNode(that.type, that.id);

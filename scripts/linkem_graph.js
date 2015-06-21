@@ -1,8 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 ajaxUrl = "ajax/Ajax.php";
 
 
@@ -32,55 +27,6 @@ var graphStylesheet = [
             'width': 10,
             'line-color': '#337ab7',
             'target-arrow-color': '#337ab7'
-        }
-    }, {
-        selector: '.Document',
-        css: {
-            'background-image': 'images/nodeTypes/documentLogo_nochange.gif'
-        }
-    }, {
-        selector: '.Part',
-        css: {
-            'background-image': 'images/nodeTypes/partLogo_nochange.gif'
-        }
-    }, {
-        selector: '.Document:selected',
-        css: {
-            'background-image': 'images/nodeTypes/documentLogo_change.gif'
-        }
-    }, {
-        selector: '.Part:selected',
-        css: {
-            'background-image': 'images/nodeTypes/partLogo_change.gif'
-        }
-    }, {
-        selector: '.Factory',
-        css: {
-            'background-image': 'images/nodeTypes/FactoryLogo_nochange.gif',
-            'content': 'data(Name)'
-        }
-    }, {
-        selector: '.Tool',
-        css: {
-            'background-image': 'images/nodeTypes/ToolLogo_nochange.gif'
-        }
-    }, {
-        selector: '.Tractor',
-        css: {
-            'background-image': 'images/nodeTypes/TractorLogo_nochange.gif',
-            'content': 'data(ref)'
-        }
-    }, {
-        selector: '.User',
-        css: {
-            'background-image': 'images/nodeTypes/UserLogo_nochange.gif',
-            'content': 'data(lastName)'
-        }
-    }, {
-        selector: '.Organisation',
-        css: {
-            'background-image': 'images/nodeTypes/OrganisationLogo_nochange.gif',
-            'content': 'data(Name)'
         }
     }, {
         selector: 'node:selected',
@@ -135,44 +81,40 @@ styleDefinitions['circle'] = {
 };
 
 styleDefinitions['arbor'] = {
-  name: 'arbor',
+    name: 'arbor',
+    animate: true, // whether to show the layout as it's running
+    maxSimulationTime: 4000, // max length in ms to run the layout
+    fit: true, // on every layout reposition of nodes, fit the viewport
+    padding: 30, // padding around the simulation
+    boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+    ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
 
-  animate: true, // whether to show the layout as it's running
-  maxSimulationTime: 4000, // max length in ms to run the layout
-  fit: true, // on every layout reposition of nodes, fit the viewport
-  padding: 30, // padding around the simulation
-  boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-  ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
+    // callbacks on layout events
+    ready: undefined, // callback on layoutready 
+    stop: undefined, // callback on layoutstop
 
-  // callbacks on layout events
-  ready: undefined, // callback on layoutready 
-  stop: undefined, // callback on layoutstop
+    // forces used by arbor (use arbor default on undefined)
+    repulsion: undefined,
+    stiffness: undefined,
+    friction: undefined,
+    gravity: true,
+    fps: undefined,
+    precision: undefined,
+    // static numbers or functions that dynamically return what these
+    // values should be for each element
+    // e.g. nodeMass: function(n){ return n.data('weight') }
+    nodeMass: undefined,
+    edgeLength: undefined,
+    stepSize: 0.1, // smoothing of arbor bounding box
 
-  // forces used by arbor (use arbor default on undefined)
-  repulsion: undefined,
-  stiffness: undefined,
-  friction: undefined,
-  gravity: true,
-  fps: undefined,
-  precision: undefined,
-
-  // static numbers or functions that dynamically return what these
-  // values should be for each element
-  // e.g. nodeMass: function(n){ return n.data('weight') }
-  nodeMass: undefined, 
-  edgeLength: undefined,
-
-  stepSize: 0.1, // smoothing of arbor bounding box
-
-  // function that returns true if the system is stable to indicate
-  // that the layout can be stopped
-  stableEnergy: function( energy ){
-    var e = energy; 
-    return (e.max <= 0.5) || (e.mean <= 0.3);
-  },
-
-  // infinite layout options
-  infinite: false // overrides all other options for a forces-all-the-time mode
+    // function that returns true if the system is stable to indicate
+    // that the layout can be stopped
+    stableEnergy: function (energy) {
+        var e = energy;
+        return (e.max <= 0.5) || (e.mean <= 0.3);
+    },
+    // infinite layout options
+    infinite: false // overrides all other options for a forces-all-the-time mode
 };
 
 
@@ -180,6 +122,23 @@ styleDefinitions['arbor'] = {
  * Graph Class
  */
 
+function updateGraphStyleSheetImages() {
+    //cleanNodeTypes
+    for (var i = 0; i < graphStylesheet.length; i++) {
+        if (graphStylesheet[i].type === 'nodeType') {
+            graphStylesheet.splice(i, 1);
+        }
+    }
+    for (var i = 0; i < nodeTemplateList.nodeTemplates.length; i++) {
+        graphStylesheet.push({
+            type: 'nodeType',
+            selector: '.' + nodeTemplateList.nodeTemplates[i].name,
+            css: {
+                'background-image': nodeTemplateList.nodeTemplates[i].image
+            }
+        });
+    }
+}
 
 function Graph() {
 
@@ -191,7 +150,7 @@ function Graph() {
     this.graphStyle = "";
     this.cy = {};
     this.nodeCollection = new nodeCollection();
-
+    
 
     // functions
     this.loadView = function (viewId) {
@@ -333,7 +292,7 @@ function Graph() {
             position: {x: 200, y: 200}
         });
         that.redrawGraph();
-        that.nodeCollection.nodes.push(id);
+        that.nodeCollection.nodeIds.push(id);
         that.saveView();
     };
 
@@ -352,7 +311,7 @@ function Graph() {
             position: {x: 200, y: 200}
         });
         that.redrawGraph();
-        that.nodeCollection.edges.push(edgeId);
+        that.nodeCollection.edgesIds.push(edgeId);
         that.saveView();
     };
 
@@ -374,10 +333,11 @@ function Graph() {
     this.displayNodeTypeList = function (nodes, edges) {
         var nodeList = [];
         for (var i = 0; i < nodes.length; i++) {
-            var newNode = new Node();
             var nodeType = nodes[i]["type"];
+            var newNode = new Node(nodeType);
             newNode.properties = nodes[i];
             newNode.retrieveId();
+            newNode.updateTemplateProperties();
             that.nodeCollection.nodes[nodes[i].uniqueId] = newNode;
             if (nodes[i].hasOwnProperty("uniqueId")) {
                 var nodeData = {id: String(nodes[i].uniqueId), weight: 75};

@@ -24,11 +24,12 @@ function nodeCollection() {
 
     this.singleSelection = false;
 
-    this.addNodeToCollection = function (node, isNew, type) {
+    this.addNodeToCollection = function (node, isNew) {
+        
         if (isNew) {
             node.createId();
-            node.setType(type);
         }
+        node.updateTemplateProperties();
         that.nodes[node.id] = node;
         that.nodeIds.push(node.id);
     };

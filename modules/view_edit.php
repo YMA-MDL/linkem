@@ -18,12 +18,7 @@ $json = json_decode($data, true);
         <div id="collapseOpenNode" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOpenNode">
             <div class="panel-body">
                 <div class="col-md-8">
-                    <select class="form-control" id="OpenNodeTypeSelection">
-                        <?php
-                        foreach ($json['nodeTypes'] as $key => $value) {
-                            echo "<option>" . $value['name'] . "</option>";
-                        }
-                        ?>
+                    <select class="form-control nodeTemplateList" id="OpenNodeTypeSelection">
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -69,12 +64,8 @@ $json = json_decode($data, true);
         <div id="collapseCreateNode" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingCreateNode">
             <div class="panel-body">
                 <div class="col-md-8">
-                    <select class="form-control" id="newItemTypeSelection">
-                        <?php
-                        foreach ($json['nodeTypes'] as $key => $value) {
-                            echo "<option>" . $value['name'] . "</option>";
-                        }
-                        ?>
+                    <select class="form-control nodeTemplateList"  id="newItemTypeSelection">
+
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -106,7 +97,7 @@ $json = json_decode($data, true);
                 </div>
                 <div class="col-md-8">
                     <label>Relationship type</label>
-                    <input type="text" class="form-control" id="relationshipName" placeholder="relation name"/>
+                    <select class="form-control" id="relationshipName"></select>
                 </div>
                 <div class="col-md-4">
                     <label>Link</label>

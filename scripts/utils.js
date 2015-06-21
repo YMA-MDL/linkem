@@ -24,3 +24,10 @@ function guid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
 }
+
+String.prototype.startsWith = function(needle)
+{
+    return(this.indexOf(needle) === 0);
+};
+
+

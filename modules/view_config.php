@@ -45,12 +45,8 @@ $json = json_decode($data, true);
         <div id="collapseNodetypeListing" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingNodetypeListing">
             <div class="panel-body">
                 <div class="col-md-8">
-                    <select class="form-control" id="openNodeTypeListView">
-                        <?php
-                        foreach ($json['nodeTypes'] as $key => $value) {
-                            echo "<option>" . $value['name'] . "</option>";
-                        }
-                        ?>
+                    <select class="form-control nodeTemplateList" id="openNodeTypeListView">
+                       
                     </select>
                 </div>
                 <div class="col-md-4">

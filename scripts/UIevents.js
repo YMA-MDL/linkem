@@ -9,20 +9,21 @@ var graphViews = [];
 ajaxUrl = "ajax/Ajax.php";
 var Nodes;
 var propertyList;
-
+var nodeTemplateList;
 
 
 
 $(document).ready(function () {
     console.log("ready!");
     propertyList = new propertyList($("#nodeproperties").find(".panel-body"));
+    nodeTemplateList = new nodeTemplateList($("#panelTemplates"));
+    
 });
 
 
 /*
  * UI EVENTS 
  */
-
 
 
 $("#addGraphView").click(function () {
@@ -56,8 +57,9 @@ $("#createItemOnView").click(function () {
     // get active graph 
     var activeGraph = getActiveGraph();
     // create the node in collection
-    var newNode = new Node();
-    activeGraph.nodeCollection.addNodeToCollection(newNode, true, nodeTypeValue);
+    var newNode = new Node(nodeTemplateList.nodeTemplates[nodeTypeValue].name);
+    
+    activeGraph.nodeCollection.addNodeToCollection(newNode, true);
     // create in DB, and add to graph when success
     newNode.createInDb();
     newNode.addToGraph(activeGraph);
@@ -102,7 +104,7 @@ $("#relationshipAdd").click(function () {
 });
 
 $("#loadNodesByType").click(function () {
-    var nodeType = $("#openNodeTypeListView").val();
+    var nodeType = nodeTemplateList.nodeTemplates[$("#openNodeTypeListView").val()].name;
     var newGraphView = new Graph();
     graphViews.push(newGraphView);
     setTimeout(function () {

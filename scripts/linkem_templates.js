@@ -1,76 +1,335 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
+/*****************************
+ *  nodeTemplateList Class   *
+ ****************************/
 
-function nodeTemplateList(){
-    
+function nodeTemplateList(DOM) {
+
+    // properties
+
     var that = this;
-    
+
+    this.DOM = DOM;
+
+    this.selected = {
+        type: '',
+        id: '',
+        selected: false
+    };
+
     this.nodeTemplates = [];
-    
-    this.addNewTemplate = function(){
-        
+
+    this.edgeTemplates = [];
+
+    this.addNodeButton = this.DOM.find("#addNodeTemplate");
+
+    this.addEdgeButton = this.DOM.find("#addEdgeTemplate");
+
+    this.nodeTemplateList = this.DOM.find("#nodeTemplateSelection");
+
+    this.edgeTemplateList = this.DOM.find("#edgeTemplateSelection");
+
+    this.nodeTemplateUsageList = $(".nodeTemplateList");
+
+    this.pictureDomSelector = this.DOM.find("#nodeTemplateImage");
+
+    this.noImagePicture = "./images/nodeTypes/noimage128.png";
+
+    this.templatePropertiesDOM = that.DOM.find("#TemplateProperties");
+
+    this.propertyTypes = [
+        "string", "date", "dateTime", "integer"
+    ];
+    this.propertyTypeList = "";
+    for (var i = 0; i < that.propertyTypes.length; i++) {
+        that.propertyTypeList += "<option value='" + that.propertyTypes[i] + "'>" + that.propertyTypes[i] + "</option>";
+    }
+
+    // functions
+
+    this.addNewNodeTemplate = function (templateName) {
         $.post(ajaxUrl, {
-            action: "node_template_load"
+            action: "node_template_add",
+            name: templateName,
+            share: true
         }).success(function (data) {
-            
+            var nodeTemplateJson = {
+                "properties": {
+                    "_name": templateName
+                }
+            };
+            that.nodeTemplates.push(new nodeTemplate(nodeTemplateJson));
+            that.loadTemplates();
+            standardNotification("new Template Added : " + templateName, "success");
         }).fail(function (err) {
             console.log(err);
         });
     };
-    
-    this.deleteTemplate = function(){
 
-    };
-    
-
-    
-    this.loadTemplates = function (){
+    this.addNewEdgeTemplate = function (templateName, sourceType, targetType) {
         $.post(ajaxUrl, {
-            action: "node_template_load"
+            action: "edge_template_add",
+            name: "templateName"
         }).success(function (data) {
-            
+            var edgeTemplateJson = {
+                "properties": {
+                    "_name": templateName,
+                    "_sourceType": sourceType,
+                    "_targetType": targetType
+                }
+            };
+            that.edgeTemplates.push(new nodeTemplate(edgeTemplateJson));
         }).fail(function (err) {
             console.log(err);
         });
     };
-    
+
+    this.deleteTemplate = function () {
+
+    };
+
+    this.loadNodeTemplateList = function () {
+        var options = "";
+        for (var i = 0; i < that.nodeTemplates.length; i++) {
+            options += "<option value='" + i + "'>" + that.nodeTemplates[i].name + "</option>";
+        }
+        that.nodeTemplateList.html(options);
+        that.nodeTemplateList.prepend('<option selected id="emptyOption"></option>');
+        that.nodeTemplateUsageList.html(options);
+    };
+
+    this.loadEdgeTemplateList = function () {
+        var options = "";
+        for (var i = 0; i < that.edgeTemplates.length; i++) {
+            options += "<option value='" + i + "'>" + that.edgeTemplates[i].name + "</option>";
+        }
+        that.edgeTemplateList.html(options);
+        that.edgeTemplateList.prepend('<option selected id="emptyOption"></option>');
+    };
+
+
+    this.loadTemplates = function () {
+        $.post(ajaxUrl, {
+            action: "templates_load"
+        }).success(function (data) {
+            for (var i = 0; i < data.content_nodes.length; i++) {
+                that.nodeTemplates.push(new nodeTemplate(data.content_nodes[i]));
+            }
+            for (var i = 0; i < data.content_edges.length; i++) {
+                that.edgeTemplates.push(new edgeTemplate(data.content_edges[i]));
+            }
+            that.loadNodeTemplateList();
+            that.loadEdgeTemplateList();
+
+            //update graphs
+            updateGraphStyleSheetImages();
+
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
+
+    this.addPropertyEntry = function (propName, propType) {
+        that.templatePropertiesDOM.find("table").append(
+                "<tr><td >" + propName + "</td>"
+                + "<td ><select class='col-md-5 form-control' >" + that.propertyTypeList + "</select></td >"
+                + "<td ><div class='btn-group ' role='group' >"
+                + "<button type='button' class=' btn btn-warning '><span class='glyphicon glyphicon-edit'></span></button>"
+                + "<button type='button' class=' btn btn-danger '><span class='glyphicon glyphicon-trash'></span></button>"
+                + "</div></td > </tr>"
+                );
+        that.templatePropertiesDOM.find("select").val(propType);
+    };
+
+    // events
+
+    this.addNodeButton.click(function () {
+        var nodeTemplateName = prompt("Please enter the node template name", "");
+        if (nodeTemplateName != null) {
+            that.addNewNodeTemplate(nodeTemplateName);
+        }
+    });
+
+    this.addEdgeButton.click(function () {
+        var edgeTemplateName = prompt("Please enter the edge template name", "");
+        if (edgeTemplateName != null) {
+            that.addNewEdgeTemplate(edgeTemplateName, "", "");
+        }
+    });
+
+    this.nodeTemplateList.change(function () {
+        var selection = $(this).val();
+        // fill name
+        that.DOM.find("#TemplateName").val(that.nodeTemplates[selection].name);
+        // fill properties
+        /// build property type list
+
+        /// load existing properties
+        that.templatePropertiesDOM.html("<table class='table table-condensed'></table>");
+        var object = that.nodeTemplates[selection].properties;
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                if ((key !== 'name') && !(key.startsWith('_'))) {
+                    that.addPropertyEntry(key, object[key]);
+                }
+            }
+        }
+        that.templatePropertiesDOM.append("<button class='btn btn-success btn-block col-md-12' id='addProperty'>add property</button>");
+        that.DOM.find("#addProperty").click(function () {
+            var nodeTemplatePropName = prompt("Please enter a property name", "");
+            if (nodeTemplatePropName != null) {
+                that.nodeTemplates[that.selected.id].addNewProperty(nodeTemplatePropName);
+                that.addPropertyEntry(nodeTemplatePropName, 'string');
+            }
+        });
+
+        // set as seleced
+        that.selected = {
+            type: "node",
+            id: selection,
+            selected: true
+        };
+
+        // fill images
+        that.pictureDomSelector.attr("src", that.nodeTemplates[selection].image);
+    });
+
+
+
+    this.edgeTemplateList.change(function () {
+
+    });
+
+
+    this.pictureDomSelector.click(function () {
+        filepicker.setKey("AgDnQiPWvQilRLfbn2w1Mz");
+        filepicker.pickAndStore({mimetype: "image/*"}, {},
+                function (InkBlobs) {
+                    console.log(InkBlobs[0].url);
+                    that.nodeTemplates[that.selected.id].updatePicture(InkBlobs[0].url);
+                    that.nodeTemplates[that.selected.id].image = InkBlobs[0].url;
+                    updateGraphStyleSheetImages();
+                    for (var i = 0; i < graphViews.length; i++) {
+                        console.log("update stylesheet");
+                        
+                        graphViews[i].cy.style(graphStylesheet);
+                    }
+                    that.pictureDomSelector.attr("src", InkBlobs[0].url);
+                });
+    });
+
+
+    // constructor actions
+
+    this.loadTemplates();
+
 }
 
+/*************************
+ *  nodeTemplate Class   *
+ ************************/
 
-function nodeTemplate (){
-    
+function nodeTemplate(json) {
+
+    // properties
+
     var that = this;
-    
-    this.properties=[];
-    
-    this.delete = function(){
+
+    this.noImagePicture = "./images/nodeTypes/noimage128.png";
+
+    this.properties = json;
+
+    if (json._image !== undefined) {
+        this.image = json._image;
+    } else {
+        this.image = this.noImagePicture;
+    }
+
+
+    this.name = json._name;
+
+    // functions
+
+    this.delete = function () {
         $.post(ajaxUrl, {
             action: "node_template_delete"
         }).success(function (data) {
-            
+
         }).fail(function (err) {
             console.log(err);
         });
     };
-    
-    
-    
+
+    this.addNewProperty = function (propertyName) {
+        $.post(ajaxUrl, {
+            action: "node_template_addProperty",
+            propertyName: propertyName,
+            nodeId: that.properties._id
+        }).success(function (data) {
+
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
+
+    this.updatePicture = function (imageURL) {
+
+        console.log(imageURL);
+        $.post(ajaxUrl, {
+            action: "node_template_updateImage",
+            imageUrl: imageURL,
+            nodeId: that.properties._id
+        }).success(function (data) {
+            console.log("Yay! image updated");
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
 }
 
-function propertyDefinition(){
-    
+/*************************
+ *  edgeTemplate Class   *
+ ************************/
+
+function edgeTemplate(json) {
+
+    // properties
+
     var that = this;
-    
+
+    this.properties = json;
+
+    this.name = json.name;
+
+    // functions
+
+    this.delete = function () {
+        $.post(ajaxUrl, {
+            action: "edge_template_delete"
+        }).success(function (data) {
+
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
+
+
+
+}
+
+/*******************************
+ *  propertyDefinition Class   *
+ ******************************/
+
+function propertyDefinition() {
+
+    var that = this;
+
     this.name = "";
-    
-    this.type ="";
-    
-    this.default ="";
-    
-    
-    
+
+    this.type = "";
+
+    this.default = "";
+
+    this.isLabel = false;
 }

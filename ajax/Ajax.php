@@ -117,13 +117,61 @@ try {
             echo json_encode($wsAnswer);
             break;
         // ====================== Node Template Management ===========================//
-        case "node_template_load":
+        case "templates_load":
             header("Content-type: application/json");
+
+            $queryNodes = 'START user=node(' . $userID . ') '
+                    . ' MATCH  user-[:own]->(nodeTemplate:linkem_nodeTemplate) '
+                    . ' OPTIONAL MATCH  user-[:belongsTo]-(:linkemAppOrg)-[:own]->(nodeTemplate) '
+                    . ' RETURN nodeTemplate,Id(nodeTemplate) as ID ';
+            $resultNodes = $cypher->statement($queryNodes)->execute();
+            $queryEdges = 'START user=node(' . $userID . ') '
+                    . ' MATCH  user-[:own]->(edgeTemplate:linkem_edgeTemplate) '
+                    . ' OPTIONAL MATCH  user-[:belongsTo]-(:linkemAppOrg)-[:own]->(edgeTemplate) '
+                    . ' RETURN edgeTemplate,Id(edgeTemplate) as ID ';
+            $resultEdges = $cypher->statement($queryEdges)->execute();
+
+            $answerNode = array();
+            foreach ($resultNodes[0] as $resNodes) {
+                $resNodes['nodeTemplate']['_id'] = $resNodes['ID'];
+                array_push($answerNode, $resNodes['nodeTemplate']);
+            }
+            $answerEdge = array();
+            foreach ($resultEdges[0] as $resEdges) {
+                $resEdges['nodeTemplate']['_id'] = $resEdges['ID'];
+                array_push($answerEdge, $resEdges['edgeTemplate']);
+            }
+
+            $wsAnswer["content_nodes"] = $answerNode;
+            $wsAnswer["content_edges"] = $answerEdge;
+            $wsAnswer["query_nodes"] = $queryNodes;
+            $wsAnswer["query_edges"] = $queryEdges;
             $wsAnswer["result"] = "success";
+            $wsAnswer["userid"] = $userID;
             echo json_encode($wsAnswer);
             break;
-        case "node_template_save":
+        case "node_template_add":
             header("Content-type: application/json");
+            $nodeTemplateName = getFromPost("name", "");
+            $shareToOrg = getFromPost("share", "");
+            //create query
+            if ($shareToOrg) {
+                $query = 'START user=node(' . $userID . ') '
+                        . ' OPTIONAL MATCH user-[:belongsTo]-(org:linkemAppOrg) '
+                        . ' CREATE  (nodeTemplate:linkem_nodeTemplate{name:"' . $nodeTemplateName . '", _shared:true}) , '
+                        . ' user-[:own]->nodeTemplate '
+                        . ' RETURN id(nodeTemplate) as ID ';
+            } else {
+                $query = 'START user=node(' . $userID . ') '
+                        . ' CREATE  (nodeTemplate:linkem_nodeTemplate{name:"' . $nodeTemplateName . '", _shared:false}) , '
+                        . ' user-[:own]->nodeTemplate, '
+                        . ' RETURN id(n) as ID ';
+            }
+            $result = $cypher->statement($query)->execute();
+            $wsAnswer["query"] = $query;
+//            $wsAnswer["content"] = $result[0]["ID"];
+
+
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -133,6 +181,54 @@ try {
             echo json_encode($wsAnswer);
             break;
         case "node_template_delete":
+            header("Content-type: application/json");
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        case "node_template_addProperty":
+            header("Content-type: application/json");
+            $propName = getFromPost("propertyName", "");
+            $nodeId = getFromPost("nodeId", "");
+            $query = 'START template=node(' . $nodeId . ') '
+                    . ' SET  template.' . $propName . '="text"  '
+                    . ' RETURN id(template) as ID ';
+
+            $result = $cypher->statement($query)->execute();
+
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        
+        case "node_template_updateImage":
+            header("Content-type: application/json");
+            $imageUrl = getFromPost("imageUrl", "");
+            $nodeId = getFromPost("nodeId", "");
+            $query = 'START template=node(' . $nodeId . ') '
+                    . ' SET  template._image="'.$imageUrl.'"  '
+                    . ' RETURN id(template) as ID ';
+
+            $result = $cypher->statement($query)->execute();
+
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        // ====================== Node Template Management ===========================//
+        case "edge_template_load":
+            header("Content-type: application/json");
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        case "edge_template_add":
+            header("Content-type: application/json");
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        case "edge_template_update":
+            header("Content-type: application/json");
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        case "edge_template_delete":
             header("Content-type: application/json");
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
