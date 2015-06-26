@@ -5,6 +5,31 @@ $json = json_decode($data, true);
 <h2>Views</h2>
 <div class="panel-group" id="accordionManageViews" role="tablist" aria-multiselectable="true">
 
+        <div class="panel panel-default">
+        <div class="panel-heading"  role="tab" id="headingNodetypeListing">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="collapsed" data-parent="#accordionManageViews" href="#collapseNodetypeListing" aria-expanded="true" aria-controls="collapseNodetypeListing">
+                    nodetype listing
+                </a>
+            </h4>
+        </div>
+        <div id="collapseNodetypeListing" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingNodetypeListing">
+            <div class="panel-body">
+                <div class="col-md-6">
+                    <select class="form-control nodeTemplateList" id="openNodeTypeListView">
+                       
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary btn-block " id="loadNodesByType" title="add to a new view"><span class="glyphicon glyphicon-list-alt"></span></button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-success btn-block " id="addNodesByType" title="add to active view"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- NODE OPENING PANEL -->
     <div class="panel panel-default">
         <div class="panel-heading"  role="tab" id="headingSavedViews">
@@ -14,8 +39,20 @@ $json = json_decode($data, true);
                 </a>
             </h4>
         </div>
-        <div id="collapseSavedViews" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingSavedViews">
-            <div class="panel-body"></div>
+        <div id="collapseSavedViews" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingSavedViews">
+            <div class="panel-body">
+                <div class="col-md-6">
+                    <select class="form-control " id="savedViewsList">
+                       
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary btn-block " id="loadSavedView" title="add to a new view"><span class="glyphicon glyphicon-folder-open"></span></button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-danger btn-block " id="deleteSavedView" title="add to active view"><span class="glyphicon glyphicon-trash"></span></button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -33,28 +70,7 @@ $json = json_decode($data, true);
         </div>
     </div>
 
-    <!-- NODE CREATION PANEL -->
-    <div class="panel panel-default">
-        <div class="panel-heading"  role="tab" id="headingNodetypeListing">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" class="collapsed" data-parent="#accordionManageViews" href="#collapseNodetypeListing" aria-expanded="true" aria-controls="collapseNodetypeListing">
-                    nodetype listing
-                </a>
-            </h4>
-        </div>
-        <div id="collapseNodetypeListing" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingNodetypeListing">
-            <div class="panel-body">
-                <div class="col-md-8">
-                    <select class="form-control nodeTemplateList" id="openNodeTypeListView">
-                       
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button class="btn btn-primary btn-block " id="loadNodesByType">Load</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
     <!-- RELATIONSHIP CREATION PANEL -->
     <div class="panel panel-default">
         <div class="panel-heading" role="tab" id="headingCustomQuery">

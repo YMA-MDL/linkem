@@ -6,25 +6,29 @@ $json = json_decode($data, true);
 <div class="panel panel-default " id="panelTemplates">
     <div class="panel-heading">Templates</div>
     <div class="panel-body">
-        <div class="col-md-8">
-            <label>Nodes</label>
-            <select class="form-control" id="nodeTemplateSelection">
-                <option selected id="emptyOption"></option>
-            </select>
+            <h4>nodes</h4>
+        <div class="row">
+            <div class="col-md-7">
+                <select class="form-control" id="nodeTemplateSelection">
+                    <option selected id="emptyOption"></option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <button class="btn btn-success " id="addNodeTemplate"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                <button class="btn btn-danger " id="delNodeTemplate"><span class="glyphicon glyphicon-remove-circle"></span></button>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label>Add</label>
-            <button class="btn btn-success btn-block" id="addNodeTemplate"><span class="glyphicon glyphicon-plus-sign"></span></button>
-        </div>
-        <div class="col-md-8">
-            <label>Edges</label>
-            <select class="form-control" id="edgeTemplateSelection">
-                <option selected id="emptyOption"></option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label>Add</label>
-            <button class="btn btn-success btn-block" id="addEdgeTemplate"><span class="glyphicon glyphicon-plus-sign"></span></button>
+            <h4>edges</h4>
+        <div class="row">
+            <div class="col-md-7">
+                <select class="form-control" id="edgeTemplateSelection">
+                    <option selected id="emptyOption"></option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <button class="btn btn-success " id="addEdgeTemplate"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                <button class="btn btn-danger " id="delEdgeTemplate"><span class="glyphicon glyphicon-remove-circle"></span></button>
+            </div>
         </div>
 
 

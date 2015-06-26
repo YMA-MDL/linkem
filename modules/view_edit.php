@@ -22,7 +22,7 @@ $json = json_decode($data, true);
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <button class="btn btn-primary btn-block disabled" id="searchNodesByType">Search</button>
+                    <button class="btn btn-primary btn-block" id="searchNodesByType">Search</button>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@ $json = json_decode($data, true);
                 </div>
                 <div class="col-md-8">
                     <label>Relationship type</label>
-                    <select class="form-control" id="relationshipName"></select>
+                    <select class="form-control" id="relationshipNameList"></select>
                 </div>
                 <div class="col-md-4">
                     <label>Link</label>

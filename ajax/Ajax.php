@@ -73,6 +73,12 @@ try {
             break;
         case "node_delete":
             header("Content-type: application/json");
+            $uniqueId = getFromPost("uniqueId", "");
+
+            $query = 'MATCH (n{uniqueId:"' . $uniqueId . '"})-[rel]-(other) '
+                    . ' DELETE  rel,n ';
+            $result = $cypher->statement($query)->execute();
+
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -169,7 +175,7 @@ try {
             }
             $result = $cypher->statement($query)->execute();
             $wsAnswer["query"] = $query;
-//            $wsAnswer["content"] = $result[0]["ID"];
+            $wsAnswer["id"] = $result[0]["ID"];
 
 
             $wsAnswer["result"] = "success";
@@ -199,12 +205,40 @@ try {
             echo json_encode($wsAnswer);
             break;
 
+        case "node_template_deleteProperty":
+            header("Content-type: application/json");
+            $propName = getFromPost("propertyName", "");
+            $nodeId = getFromPost("nodeId", "");
+            $query = 'START template=node(' . $nodeId . ') '
+                    . ' REMOVE  template.' . $propName
+                    . ' RETURN id(template) as ID ';
+
+            $result = $cypher->statement($query)->execute();
+
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
         case "node_template_updateImage":
             header("Content-type: application/json");
             $imageUrl = getFromPost("imageUrl", "");
             $nodeId = getFromPost("nodeId", "");
             $query = 'START template=node(' . $nodeId . ') '
                     . ' SET  template._image="' . $imageUrl . '"  '
+                    . ' RETURN id(template) as ID ';
+
+            $result = $cypher->statement($query)->execute();
+
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+
+        case "node_template_updateProperty":
+            header("Content-type: application/json");
+            $propName = getFromPost("propertyName", "");
+            $propValue = getFromPost("propertyValue", "");
+            $nodeId = getFromPost("nodeId", "");
+            $query = 'START template=node(' . $nodeId . ') '
+                    . ' SET  template.' . $propName . '="' . $propValue . '"  '
                     . ' RETURN id(template) as ID ';
 
             $result = $cypher->statement($query)->execute();
@@ -233,7 +267,7 @@ try {
             }
             $result = $cypher->statement($query)->execute();
             $wsAnswer["query"] = $query;
-//            $wsAnswer["content"] = $result[0]["ID"];
+            $wsAnswer["id"] = $result[0]["ID"];
 
 
             $wsAnswer["result"] = "success";
@@ -241,6 +275,20 @@ try {
             break;
         case "edge_template_update":
             header("Content-type: application/json");
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
+        case "edge_template_updateProperty":
+            header("Content-type: application/json");
+            $propName = getFromPost("propertyName", "");
+            $propValue = getFromPost("propertyValue", "");
+            $nodeId = getFromPost("nodeId", "");
+            $query = 'START template=node(' . $nodeId . ') '
+                    . ' SET  template.' . $propName . '="' . $propValue . '"  '
+                    . ' RETURN id(template) as ID ';
+
+            $result = $cypher->statement($query)->execute();
+
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -387,6 +435,29 @@ try {
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
+        case "getViews":
+            header("Content-type: application/json");
+
+            //create query
+            $result = $cypher->statement(
+                            'START user=node(' . $userID . ') '
+                            . ' MATCH  user-[:created]->(views:linkem_tech_view) '
+                            . ' RETURN id(views) as ID, views.uniqueId as UID, views.query as QUERY, views.name as NAME '
+                    )->execute();
+
+            $wsAnswer["content"] = array();
+
+            foreach ($result[0] as $res) {
+                $view = array();
+                $view['id'] = $res['ID'];
+                $view['uid'] = $res['UID'];
+                $view['query'] = $res['QUERY'];
+                $view['name'] = $res['NAME'];
+                array_push($wsAnswer["content"], $view);
+            }
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
         case "createView":
             header("Content-type: application/json");
             $viewId = getFromPost("viewId", "");
@@ -402,37 +473,54 @@ try {
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
+        case "updateViewName":
+            header("Content-type: application/json");
+            $viewId = getFromPost("viewId", "");
+            $viewName = getFromPost("viewName", "");
+
+            //create query
+            $result = $cypher->statement(
+                            'START view=node(' . $viewId . ') '
+                            . ' SET  view.name="' . $viewName . '" '
+                            . ' RETURN id(view) as ID '
+                    )->execute();
+
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+            break;
         case "saveViewState":
             header("Content-type: application/json");
             $viewStateEls = getFromPost("viewState", "");
             $viewId = getFromPost("viewId", "");
             $query = "";
             $i = 0;
-            if (array_key_exists("nodes", $viewStateEls)) {
-                foreach ($viewStateEls["nodes"] as $node) {
-                    if ($i != 0) {
+            if (count($viewStateEls) > 0) {
+                if (array_key_exists("nodes", $viewStateEls)) {
+                    foreach ($viewStateEls["nodes"] as $node) {
+                        if ($i != 0) {
+                            $query .= ", ";
+                        } else {
+                            $query = "MATCH ";
+                        }
+                        $query .= " (n$i{uniqueId:'$node'}) ";
+                        $i++;
+                    }
+                }
+                if (array_key_exists("edges", $viewStateEls)) {
+                    foreach ($viewStateEls["edges"] as $edge) {
+                        $query .= ", (start$i)-[n$i{uniqueId:'$edge'}]->(end$i) ";
+                        $i++;
+                    }
+                }
+                for ($j = 0; $j < $i; $j++) {
+                    if ($j != 0) {
                         $query .= ", ";
                     } else {
-                        $query = "MATCH ";
+                        $query .= "RETURN ";
                     }
-                    $query .= " (n$i{uniqueId:'$node'}) ";
-                    $i++;
+                    $query .= "n$j";
+                    $j++;
                 }
-            }
-            if (array_key_exists("edges", $viewStateEls)) {
-                foreach ($viewStateEls["edges"] as $edge) {
-                    $query .= ", (start$i)-[n$i{uniqueId:'$edge'}]->(end$i) ";
-                    $i++;
-                }
-            }
-            for ($j = 0; $j < $i; $j++) {
-                if ($j != 0) {
-                    $query .= ", ";
-                } else {
-                    $query .= "RETURN ";
-                }
-                $query .= "n$j";
-                $j++;
             }
 
             //create query

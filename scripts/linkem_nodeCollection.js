@@ -25,41 +25,116 @@ function nodeCollection() {
     this.singleSelection = false;
 
     this.addNodeToCollection = function (node, isNew) {
-        
         if (isNew) {
             node.createId();
         }
         node.updateTemplateProperties();
         that.nodes[node.id] = node;
+        allNodes[node.id] = node;
         that.nodeIds.push(node.id);
     };
 
     this.selectNode = function (nodeId) {
         // list propertie
-        propertyList.loadProperties(that.nodes[nodeId].properties);
+        propertyList.loadProperties(allNodes[nodeId].properties);
         propertyList.switchPropertyTargetType("Node");
+        propertyList.enableActions();
         that.singleSelection = true;
         that.singleSelectionType = "node";
         that.selectedNode = that.nodes[nodeId];
+        that.selectedEdge = null;
+    };
+    this.selectGroupedNodes = function () {
+        // list propertie
+        propertyList.emptyMode();
+        propertyList.switchPropertyTargetType("Node");
+        propertyList.disableActions();
+        propertyList.enableGroupActions();
+        that.singleSelection = false;
+        that.singleSelectionType = "node";
+        that.selectedNode = null;
+        that.selectedEdge = null;
     };
 
     this.selectEdge = function (edgeId) {
         // list propertie
-        propertyList.loadProperties(that.edges[edgeId].properties);
+        propertyList.loadProperties(allEdges[edgeId].properties);
         propertyList.switchPropertyTargetType("Edge");
+        propertyList.enableActions();
         that.singleSelection = true;
         that.singleSelectionType = "edge";
         that.selectedEdge = that.edges[edgeId];
+        that.selectedNode = null;
     };
 
     this.unselectNodes = function () {
         propertyList.emptyMode();
+        propertyList.disableActions();
+        propertyList.disableGroupActions();
         that.singleSelection = false;
         that.selectedNode = null;
     };
 
+    this.deleteNode = function (node) {
+
+        // in db
+        $.post(ajaxUrl, {
+            action: "node_delete",
+            uniqueId: node.id
+        }).success(function (data) {
+            // delete in collection
+            for (var i = 0; i < graphsSetMgr.openGraphList.length; i++) {
+                var ag = graphsSetMgr.openGraphList[i];
+                ag.nodeCollection.nodeIds.splice(that.nodeIds.indexOf(node.id), 1);
+                delete ag.nodeCollection.nodes[node.id];
+                delete allNodes[node.id];
+                ag.cy.$("[id='" + ag.nodeCollection.selectedNode.id + "']").remove();
+            }
+        }).fail(function (err) {
+            console.log(err);
+        });
+        console.log("delete node");
+    };
+
+    this.deleteEdge = function (edge) {
+        console.log("delete edge");
+        // in db
+        $.post(ajaxUrl, {
+            action: "edge_delete",
+            uniqueId: edge.id
+        }).success(function (data) {
+            for (var i = 0; i < graphsSetMgr.openGraphList.length; i++) {
+                var ag = graphsSetMgr.openGraphList[i];
+                ag.nodeCollection.edgeIds.splice(that.nodeIds.indexOf(edge.id), 1);
+                delete  ag.nodeCollection.edges[edge.id];
+                delete  allEdges[edge.id];
+                ag.cy.$("[id='" + ag.nodeCollection.selectedEdge.id + "']").remove();
+            }
+        }).fail(function (err) {
+            console.log(err);
+        });
+        console.log("delete node");
+    };
+
+    this.detachNode = function (node) {
+        var ag = getActiveGraph();
+        that.nodeIds.splice(that.nodeIds.indexOf(node.id), 1);
+        delete that.nodes[node.id];
+        delete allNodes[node.id];
+        ag.cy.$("[id='" + ag.nodeCollection.selectedNode.id + "']").remove();
+    };
+
+    this.detachEdge = function (edge) {
+        var ag = getActiveGraph();
+        that.edgeIds.splice(that.nodeIds.indexOf(edge.id), 1);
+        delete that.edges[edge.id];
+        delete allEdges[edge.id];
+        ag.cy.$("[id='" + ag.nodeCollection.selectedEdge.id + "']").remove();
+    };
+
     this.createRelationship = function (source, target, type) {
         var newEdge = new Edge(source, target, type, true);
+        allEdges[newEdge.id] = newEdge;
         that.edges[newEdge.id] = newEdge;
         that.edgeIds.push(newEdge.id);
         $.post(ajaxUrl, {
@@ -104,7 +179,7 @@ function nodeCollection() {
             if ((data.nodes.length > 0) || (data.edges.length > 1)) {
                 graph.displayNodeTypeList(data.nodes, data.edges);
             } else {
-                standardNotification("no relationships found","warning");
+                standardNotification("no relationships found", "warning");
             }
 
         }).fail(function (err) {

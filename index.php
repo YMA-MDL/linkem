@@ -18,7 +18,7 @@ and open the template in the editor.
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon"       type="image/png"       href="./favicon.ico">
-        <title></title>
+        <title>Linkem</title>
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
@@ -26,6 +26,10 @@ and open the template in the editor.
         <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-theme.min.css">
         <!-- Optional theme -->
         <link rel="stylesheet" href="styles/index.css">
+        <!-- datatables style -->
+        <link href="vendor/datatable/css/dataTables.bootstrap.default.css" rel="stylesheet">
+        <link href="vendor/datatable/css/dataTables.bootstrap.css" rel="stylesheet">
+        <link href="vendor/datatable/css/dataTables.colVis.css" rel="stylesheet">
 
     </head>
     <body>
@@ -45,7 +49,6 @@ and open the template in the editor.
         <?php
         include 'modules/modals.php'
         ?>
-
     </body>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -58,7 +61,6 @@ and open the template in the editor.
     <script src="vendor/cytoscape/cytoscape.min.js"></script>
     <!-- utils.js -->
     <script src="scripts/utils.js"></script>
-
     <!-- linkem_nodes.js -->
     <script src="scripts/linkem_nodes.js"></script>
     <!-- linkem_edgess.js -->
@@ -71,8 +73,12 @@ and open the template in the editor.
     <script src="scripts/linkem_graph.js"></script>
     <!-- UI events.js -->
     <script src="scripts/UIevents.js"></script>
-
     <!-- FilePicker Integration -->
     <script type="text/javascript" src="//api.filepicker.io/v2/filepicker.js"></script>
+    <!-- datatables -->        
+    <script src="vendor/datatable/js/jquery.dataTables.min.js"></script> 
+    <script src="vendor/datatable/js/dataTables.bootstrap.js"></script>
+    <script src="vendor/datatable/js/dataTables.fixedHeader.js"></script> 
+    <script src="vendor/datatable/js/dataTables.colVis.js"></script> 
 
 </html>

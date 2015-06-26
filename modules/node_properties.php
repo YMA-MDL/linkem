@@ -14,7 +14,8 @@
     </div>
     <div class="panel-heading"><span class="nodeOrEdgeTitle">Node</span> Actions</div>
     <div class="panel-body">
-        <button class="btn btn-danger disabled">delete <span class="nodeOrEdgeTitle">Node</span></button>
-        <button class="btn btn-warning disabled">detach <span class="nodeOrEdgeTitle">Node</span></button>
-    </div>
+        <button class="btn btn-danger disabled eltActionsButtons btn-block" id="deleteElt">delete <span class="nodeOrEdgeTitle">Node</span></button>
+        <button class="btn btn-warning disabled eltActionsButtons btn-block" id="detachElt">detach <span class="nodeOrEdgeTitle">Node</span></button>
+        <button class="btn btn-info disabled eltsActionsButtons eltActionsButtons btn-block" id="deleteElt">move to other view </button>
+   </div>
 </div>

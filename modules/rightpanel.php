@@ -5,8 +5,8 @@
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#edit" aria-controls="defaulttView" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
     <li role="presentation"><a href="#configview" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li>
-    <li role="presentation"><a href="#export" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span></a></li>
-    <li role="presentation"><a href="#access" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-user" aria-hidden="true"></span></a></li>
+<!--    <li role="presentation"><a href="#export" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-export" aria-hidden="true"></span></a></li>
+    <li role="presentation"><a href="#access" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-user" aria-hidden="true"></span></a></li>-->
     <li role="presentation"><a href="#templates" aria-controls="profile" role="tab" data-toggle="tab"> <span class="glyphicon glyphicon-th" aria-hidden="true"></span></a></li>
   </ul>
 

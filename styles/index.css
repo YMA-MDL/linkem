@@ -7,6 +7,22 @@ and open the template in the editor.
     Created on : 7 juin 2015, 11:51:38
     Author     : YMA
 */
+.centralpanel,.rightpanel{
+    margin-top: 10px;
+}
+
+
+.tabActions{
+    margin-left: 5px;
+}
+.tabActions:hover{
+    color: red;
+}
+
+#graphCtxMenu {
+    position:fixed;
+}
+
 
 .graphView{
     height: 800px;
@@ -14,25 +30,60 @@ and open the template in the editor.
     border-radius: 8px;
     margin-top: 10px;
     position: relative;
+     -moz-box-shadow:    inset 0 0 10px #000000;
+   -webkit-box-shadow: inset 0 0 10px #000000;
+   box-shadow:         inset 0 0 10px #000000;
+}
+.gridView{
+    height: 800px;
+    margin-top: 10px;
+    position: relative;
 }
 
-.switchGridGraph.graphState{
+
+.switchGridGraph{
     z-index: 1000;
-    height: 48px;
-    width: 48px;
+    height: 32px;
+    width: 32px;
     position: absolute;
     top: 60px;
     right: 25px;
+    border-radius: 3px;
+    border: solid 1px black;
+}
+.switchGridGraph.graphState{
+    background: url("../images/graphswitch.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+.switchGridGraph.gridState{
     background: url("../images/gridswitch.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    border-radius: 5px;
-    border: solid 1px black;
 }
-.switchGridGraph.gridState{
+.switchGridGraph.graphState:hover{
     background: url("../images/gridswitch.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-color: #ddd;
+}
+.switchGridGraph.gridState:hover{
+    background: url("../images/graphswitch.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-color: #ddd;
 }
 .switchGridGraph:hover{
-    border: solid 2px red;
+    border: dotted 2px blue;
+}
+
+div.tab-content.gridTabs{
+    margin-top: 40px;
+}
+ul.gridTabs{
+    margin-top: 20px;
 }
