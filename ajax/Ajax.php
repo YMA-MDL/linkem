@@ -35,7 +35,7 @@ try {
             //create query
             $result = $cypher->statement(
                             'START user=node(' . $userID . ') '
-                            . ' CREATE  (newNode:linkem_' . $nodeType . '{uniqueId:"' . $uniqueId . '"}),'
+                            . ' CREATE  (newNode:linkem_' . $nodeType . ':linkem_node{uniqueId:"' . $uniqueId . '"}),'
                             . ' user-[:created]->newNode, '
                             . ' user-[:canRead]->newNode, '
                             . ' user-[:canUpdate]->newNode, '
@@ -94,7 +94,7 @@ try {
             //create query
             $result = $cypher->statement(
                             'MATCH (source{uniqueId:"' . $uniqueIdSource . '"}),(target{uniqueId:"' . $uniqueIdTarget . '"}) '
-                            . ' CREATE  source-[edge:' . $linkType . '{uniqueId:"' . $uniqueId . '"}]->target '
+                            . ' CREATE  source-[edge:' . $linkType . ':linkem_edge{uniqueId:"' . $uniqueId . '"}]->target '
                             . ' RETURN id(edge) as ID '
                     )->execute();
 
@@ -119,6 +119,12 @@ try {
             break;
         case "link_delete":
             header("Content-type: application/json");
+            $uniqueId = getFromPost("uniqueId", "");
+
+            $query = 'MATCH (a)-[n{uniqueId:"' . $uniqueId . '"}]-(other) '
+                    . ' DELETE  n ';
+            $result = $cypher->statement($query)->execute();
+
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -436,6 +442,7 @@ try {
             echo json_encode($wsAnswer);
             break;
         case "getViews":
+
             header("Content-type: application/json");
 
             //create query

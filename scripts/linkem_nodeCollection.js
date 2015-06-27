@@ -58,6 +58,7 @@ function nodeCollection() {
 
     this.selectEdge = function (edgeId) {
         // list propertie
+        console.log(edgeId);
         propertyList.loadProperties(allEdges[edgeId].properties);
         propertyList.switchPropertyTargetType("Edge");
         propertyList.enableActions();
@@ -100,7 +101,7 @@ function nodeCollection() {
         console.log("delete edge");
         // in db
         $.post(ajaxUrl, {
-            action: "edge_delete",
+            action: "link_delete",
             uniqueId: edge.id
         }).success(function (data) {
             for (var i = 0; i < graphsSetMgr.openGraphList.length; i++) {

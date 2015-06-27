@@ -5,6 +5,18 @@
  */
 
 
+// Common Table Builders
+
+function tableAPI_addATable(DOMTarget,idRef,Class, headFoot){
+    
+}
+
+function tableAPI_addAColumn(){
+    
+}
+
+// others
+
 function standardNotification(caption, type) {
     $.notify(caption, {
         className: type,

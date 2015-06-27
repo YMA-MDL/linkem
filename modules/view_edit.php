@@ -22,7 +22,7 @@ $json = json_decode($data, true);
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <button class="btn btn-primary btn-block" id="searchNodesByType">Search</button>
+                    <button class="btn btn-primary btn-block disabled" id="searchNodesByType">Search</button>
                 </div>
             </div>
         </div>

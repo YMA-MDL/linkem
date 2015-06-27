@@ -55,11 +55,11 @@ $("#propertyAddButton").click(function () {
 
 
 var contextMenu = '<div id="graphCtxMenu" class="list-group"> ';
-contextMenu+= '<a href="#" class="list-group-item list-group-item-warning" id="contextDetachElement"><span class="glyphicon glyphicon-minus" ></span> Detach</a>';
-contextMenu+= '<a href="#" class="list-group-item list-group-item-danger" id="contextDeleteElement"><span class="glyphicon glyphicon-trash" ></span> Delete</a>';
+contextMenu += '<a href="#" class="list-group-item list-group-item-warning" id="contextDetachElement"><span class="glyphicon glyphicon-minus" ></span> Detach</a>';
+contextMenu += '<a href="#" class="list-group-item list-group-item-danger" id="contextDeleteElement"><span class="glyphicon glyphicon-trash" ></span> Delete</a>';
 contextMenu += '</div>';
 
-var contextMenuItem =  '<a href="#" class="list-group-item list-group-item-info customContextItemMenu"></a>';
+var contextMenuItem = '<a href="#" class="list-group-item list-group-item-info customContextItemMenu"></a>';
 
 $("#createItemOnView").click(function () {
     // get select value
@@ -77,11 +77,75 @@ $("#createItemOnView").click(function () {
 });
 
 $("#searchNodesByType").click(function () {
-    
-    // get nodeType value
+
+    // get nodeType 
+    var nodeTypeIndex = $("#OpenNodeTypeSelection").val();
+    var nodeTypeName = nodeTemplateList.nodeTemplates[nodeTypeIndex].name;
+    console.log(nodeTypeName);
     // Load modal content
-    // open modal
-    $('#searchByType').modal();
+    $.post(ajaxUrl, {
+        action: "nodeTypeQuery",
+        nodeType: nodeTypeName
+    }).success(function (data) {
+        // add the grid
+        $("#searchModal").html("<table class='table table-condensed table-bordered table-striped' id='searchTableByNodeType'><thead><tr></tr></thead><tbody/><tfoot><tr></tr></tfoot></table>");
+        // build grid columns
+        for (var key in nodeTemplateList.nodeTemplates[nodeTypeIndex].properties) {
+            if (!(key.startsWith("_"))) {
+                $("#searchTableByNodeType thead tr").append("<th type='" + nodeTemplateList.nodeTemplates[nodeTypeIndex].properties[key] + "'>" + key + "</th>");
+                $("#searchTableByNodeType tfoot tr").append("<th type='" + nodeTemplateList.nodeTemplates[nodeTypeIndex].properties[key] + "'>" + key + "</th>");
+                // build column set
+            }
+        }
+
+
+
+        var searchGrid = new grid(nodeTypeName);
+
+
+        console.log(data);
+        console.log(searchGrid.columns);
+        // launch datatable
+
+        var columnsArrayDefaultContent = [];
+        for (var i = 0; i < searchGrid.columns.length; i++) {
+            columnsArrayDefaultContent.push(i);
+        }
+        var searchTable = $("#searchTableByNodeType").DataTable({
+            data: data.nodes,
+            columns: searchGrid.columns,
+            "columnDefs": [
+                {
+                    "data": null,
+                    "defaultContent": "<i>not set</i>",
+                    "targets": columnsArrayDefaultContent
+                }
+            ]
+        });
+        $('#searchTableByNodeType tbody').on('click', 'tr', function () {
+            $(this).toggleClass('info');
+            console.log(searchTable.rows('.info').data().length + ' row(s) selected');
+
+        });
+
+        $("#addSearchSelectionToActiveGraph").click(function () {
+            // get the node id array
+            var queryArray= [];
+            for (var i = 0; i < searchTable.rows('.info').data().length; i++) {
+                queryArray.push(searchTable.rows('.info').data()[i].uniqueId);
+            }
+            
+            
+            
+        });
+
+
+        // open modal
+        $('#searchByType').modal();
+    }).fail(function (err) {
+        console.log(err);
+    });
+
 });
 
 $("#deleteElt").click(function () {
@@ -157,6 +221,7 @@ $("#loadNodesByType").click(function () {
     var nodeType = nodeTemplateList.nodeTemplates[$("#openNodeTypeListView").val()].name;
     var newGraphView = new Graph();
     graphsSetMgr.openGraphList.push(newGraphView);
+    graphsSetMgr.enableGraphTabButtons(newGraphView);
     setTimeout(function () {
         newGraphView.cy.ready(function () {
             newGraphView.loadViewByNodeType(nodeType);
@@ -181,39 +246,6 @@ $("#expendEdgesUpAndDown").click(function () {
     var activeGraph = getActiveGraph();
     activeGraph.nodeCollection.loadRelationships(activeGraph, "both");
 });
-
-$("#nodeTemplateSelection").change(function () {
-    if ($(this).val() !== "") {
-        $("#edgeTemplateSelection").val("");
-        // display properties
-        $.post(ajaxUrl, {
-            prop: "getItemElements"
-        }).success(function (data) {
-
-        }).fail(function (err) {
-            console.log(err);
-        });
-        // display image
-    }
-});
-
-$("#edgeTemplateSelection").change(function () {
-    if ($(this).val() !== "") {
-        $("#nodeTemplateSelection").val("");
-        // display properties
-        $.post(ajaxUrl, {
-            prop: "getItemElements"
-        }).success(function (data) {
-
-        }).fail(function (err) {
-            console.log(err);
-        });
-        // display image
-    }
-});
-
-
-
 
 /*
  * Functions

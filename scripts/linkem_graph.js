@@ -212,7 +212,10 @@ function graphSet() {
     this.addGraphView = function () {
         var newTab = new Graph();
         that.openGraphList.push(newTab);
+        that.enableGraphTabButtons(newTab);
+    };
 
+    this.enableGraphTabButtons = function (newTab) {
         newTab.TabDOMElement.find(".closeTab").click(function () {
             var clickedTabId = $(this).closest("li").attr("graphId");
             // save  view
@@ -380,6 +383,7 @@ function Graph() {
             });
         }, 500);
         $("#createItemOnView").removeClass("disabled");
+        $("#searchNodesByType").removeClass("disabled");
     };
 
     this.buildCytoscapeGraph = function (style) {
@@ -425,6 +429,7 @@ function Graph() {
                                 $("#targetItemSelection").val("");
                                 $("#relationshipName").val("");
                                 $(this).addClass("disabled");
+                                that.connectionProcess.status = "idle";
                             }
 
                         } else if (evt.cyTarget[0].group() === "edges") {
@@ -502,12 +507,32 @@ function Graph() {
                             }
                             $("#graphCtxMenu").remove();
                         });
+                        $("#graphCtxMenu").css("left", currentMousePos.x);
+                        $("#graphCtxMenu").css("top", currentMousePos.y);
+                        $('#graphCtxMenu').dropdown();
+                    }
+                    
+                     if (evt.cyTarget[0].group() === "edges") {
+                        that.nodeCollection.selectEdge(evt.cyTarget.id());
+
+                        $("#contextDetachElement").click(function () {
+                            if (that.nodeCollection.selectedEdge !== null) {
+                                that.nodeCollection.detachEdge(that.nodeCollection.selectedEdge);
+                            }
+                            $("#graphCtxMenu").remove();
+                        });
+                        $("#contextDeleteElement").click(function () {
+                            if (that.nodeCollection.selectedEdge !== null) {
+                                that.nodeCollection.deleteEdge(that.nodeCollection.selectedEdge);
+                            }
+                            $("#graphCtxMenu").remove();
+                        });
+                        $("#graphCtxMenu").css("left", currentMousePos.x);
+                        $("#graphCtxMenu").css("top", currentMousePos.y);
+                        $('#graphCtxMenu').dropdown();
                     }
 
 
-                    $("#graphCtxMenu").css("left", currentMousePos.x);
-                    $("#graphCtxMenu").css("top", currentMousePos.y);
-                    $('#graphCtxMenu').dropdown();
                 } else {
                     if ($("#graphCtxMenu").length > 0) {
                         $("#graphCtxMenu").remove();
@@ -585,6 +610,7 @@ function Graph() {
             newNode.updateTemplateProperties();
             that.nodeCollection.nodes[nodes[i].uniqueId] = newNode;
             allNodes[nodes[i].uniqueId] = newNode;
+            console.log(allNodes);
             if (nodes[i].hasOwnProperty("uniqueId")) {
                 var nodeData = {id: String(nodes[i].uniqueId), weight: 75};
                 $.extend(nodeData, newNode.properties);
@@ -602,7 +628,7 @@ function Graph() {
             newEdge.properties = edges[i].data;
             newEdge.retrieveId();
             that.nodeCollection.edges[edges[i].uniqueId] = newEdge;
-            allEdges[nodes[i].uniqueId] = newNode;
+            allEdges[edges[i].uniqueId] = newEdge;
             if (edges[i].hasOwnProperty("uniqueId")) {
 
                 var edgeData = {
@@ -668,7 +694,7 @@ function viewGrids() {
 
 
             // add the grid div
-            if (i == 0) {
+            if (i === 0) {
                 viewDOM.find("ul.nav").append('<li role="presentation" class="active"><a href="#' + nodeTypes[i] + '" aria-controls="home" role="tab" data-toggle="tab">' + nodeTypes[i] + '</a></li>');
                 viewDOM.find("div.tab-content").append('<div role="tabpanel" class="tab-pane active gridTab" id="' + nodeTypes[i] + '"></div>');
             } else {
