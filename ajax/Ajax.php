@@ -69,7 +69,7 @@ try {
                     . ' SET  n.' . $propName . '="' . $propValue . '" '
                     . ' RETURN id(n) as ID ';
             $result = $cypher->statement($query)->execute();
-            
+
             // build return array
             $wsAnswer["query"] = $query;
             $wsAnswer["result"] = "success";
@@ -430,7 +430,12 @@ try {
             $wsAnswer["nodes"] = [];
             $wsAnswer["edges"] = [];
             foreach ($result[0] as $res) {
-                $res["node"]["type"] = explode("_", $res["Labels"][0])[1];
+                for ($i=0;$i<count($res["Labels"]);$i++){
+                    if (substr( $res["Labels"][$i], 0, 6 ) === "linkem"){
+                        $res["node"]["type"] = explode("_", $res["Labels"][$i])[1];
+                    }
+                }
+
                 array_push($wsAnswer["nodes"], $res["node"]);
                 if (!(is_null($res["edge"]))) {
                     $edge = array();

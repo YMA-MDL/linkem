@@ -228,7 +228,7 @@ function nodeTemplateList(DOM) {
         $(this).find(":selected").each(function () {
             selection.push($(this).text());
         });
-        that.nodeTemplates[that.selected.id].updatePropType("_label",selection.join());
+        that.nodeTemplates[that.selected.id].updateLabel("_label",selection.join());
     });
 
     this.nodeTemplateList.change(function () {
@@ -262,7 +262,9 @@ function nodeTemplateList(DOM) {
             }
             that.DOM.find("#nodeLabelSelection").html(labelSelectionList);
             // set label selected
-            $.each(that.nodeTemplates[selection].label.split("-"), function (i, e) {
+            console.log(that.nodeTemplates[selection]);
+            $.each(that.nodeTemplates[selection].label.split(","), function (i, e) {
+                console.log(e);
                  that.DOM.find("#nodeLabelSelection option[value='"+e+"']").prop("selected", true);
             });
             // fill properties
@@ -429,6 +431,18 @@ function nodeTemplate(json) {
             console.log(err);
         });
     };
+    this.updateLabel = function (propName, propType) {
+        $.post(ajaxUrl, {
+            action: "node_template_updateProperty",
+            propertyName: propName,
+            propertyValue: propType,
+            nodeId: that.properties._id
+        }).success(function (data) {
+            that.label= propType;
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
 
     this.addNewProperty = function (propertyName, nodeTemplates) {
         $.post(ajaxUrl, {
@@ -449,20 +463,6 @@ function nodeTemplate(json) {
             nodeId: that.properties._id
         }).success(function (data) {
             console.log("Yay! image updated");
-        }).fail(function (err) {
-            console.log(err);
-        });
-    };
-    this.updateLabel = function (label,type) {
-        $.post(ajaxUrl, {
-            action: "node_template_updateLabel",
-            label: label.join(),
-            type :that.properties._name,
-            nodeId: that.properties._id
-        }).success(function (data) {
-            console.log("Yay! label updated");
-            //update all graphs
-
         }).fail(function (err) {
             console.log(err);
         });

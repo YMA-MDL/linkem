@@ -696,6 +696,11 @@ function Graph() {
         that.graphAddNodeList(nodeList);
     };
 
+    this.addNodeSelectionIdsToView = function(idArray){
+        // get existing nodes to find relationships
+        //
+    }
+
     this.startNewViewFromNodeSelection = function () {
 
     };

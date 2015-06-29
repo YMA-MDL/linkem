@@ -122,16 +122,17 @@ $("#searchNodesByType").click(function () {
         });
         $('#searchTableByNodeType tbody').on('click', 'tr', function () {
             $(this).toggleClass('info');
-            console.log(searchTable.rows('.info').data().length + ' row(s) selected');
-
         });
 
         $("#addSearchSelectionToActiveGraph").click(function () {
             // get the node id array
-            var queryArray= [];
+            var querryArray= [];
             for (var i = 0; i < searchTable.rows('.info').data().length; i++) {
-                queryArray.push(searchTable.rows('.info').data()[i].uniqueId);
+                querryArray.push(searchTable.rows('.info').data()[i].uniqueId);
             }
+            console.log(querryArray);
+            var ag = getActiveGraph();
+            ag.addNodeSelectionIdsToView(querryArray);
         });
 
         // open modal
