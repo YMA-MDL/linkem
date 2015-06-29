@@ -35,7 +35,7 @@ try {
             //create query
             $result = $cypher->statement(
                             'START user=node(' . $userID . ') '
-                            . ' CREATE  (newNode:linkem_' . $nodeType . ':linkem_node{uniqueId:"' . $uniqueId . '"}),'
+                            . ' CREATE  (newNode:linkem_' . $nodeType . ':lkmtechnode{uniqueId:"' . $uniqueId . '"}),'
                             . ' user-[:created]->newNode, '
                             . ' user-[:canRead]->newNode, '
                             . ' user-[:canUpdate]->newNode, '
@@ -53,10 +53,12 @@ try {
             $wsAnswer["result"] = "success";
             $wsAnswer["content"] = ["id" => $result[0][0]["ID"]];
             echo json_encode($wsAnswer);
-            break;
 
+            break;
         case "node_update":
+
             header("Content-type: application/json");
+
             //retreive nodeType
             $propName = getFromPost("propName", "");
             $propValue = getFromPost("propValue", "");
@@ -67,6 +69,8 @@ try {
                     . ' SET  n.' . $propName . '="' . $propValue . '" '
                     . ' RETURN id(n) as ID ';
             $result = $cypher->statement($query)->execute();
+            
+            // build return array
             $wsAnswer["query"] = $query;
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
@@ -94,7 +98,7 @@ try {
             //create query
             $result = $cypher->statement(
                             'MATCH (source{uniqueId:"' . $uniqueIdSource . '"}),(target{uniqueId:"' . $uniqueIdTarget . '"}) '
-                            . ' CREATE  source-[edge:' . $linkType . ':linkem_edge{uniqueId:"' . $uniqueId . '"}]->target '
+                            . ' CREATE  source-[edge:' . $linkType . '{uniqueId:"' . $uniqueId . '"}]->target '
                             . ' RETURN id(edge) as ID '
                     )->execute();
 
@@ -262,12 +266,12 @@ try {
             if ($shareToOrg) {
                 $query = 'START user=node(' . $userID . ') '
                         . ' OPTIONAL MATCH user-[:belongsTo]-(org:linkemAppOrg) '
-                        . ' CREATE  (edgeTemplate:linkem_edgeTemplate{_name:"' . $nodeTemplateName . '", _label:"_name", _shared:true}) , '
+                        . ' CREATE  (edgeTemplate:linkem_edgeTemplate{_name:"' . $nodeTemplateName . '", _label:"_name",_source:"",_target:"", _shared:true}) , '
                         . ' user-[:own]->edgeTemplate '
                         . ' RETURN id(edgeTemplate) as ID ';
             } else {
                 $query = 'START user=node(' . $userID . ') '
-                        . ' CREATE  (edgeTemplate:linkem_edgeTemplate{_name:"' . $nodeTemplateName . '", _label:"_name", _shared:false}) , '
+                        . ' CREATE  (edgeTemplate:linkem_edgeTemplate{_name:"' . $nodeTemplateName . '", _label:"_name",_source:"",_target:"", _shared:false}) , '
                         . ' user-[:own]->edgeTemplate, '
                         . ' RETURN id(edgeTemplate) as ID ';
             }
@@ -276,11 +280,6 @@ try {
             $wsAnswer["id"] = $result[0]["ID"];
 
 
-            $wsAnswer["result"] = "success";
-            echo json_encode($wsAnswer);
-            break;
-        case "edge_template_update":
-            header("Content-type: application/json");
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -298,8 +297,21 @@ try {
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
-        case "edge_template_delete":
+        case "template_delete":
             header("Content-type: application/json");
+            $eltType = getFromPost("type", "");
+            $eltId = getFromPost("eltId", "");
+            $nodeLabel = "";
+            if ($eltType==="node"){
+
+            }else if ($eltType==="edge") {
+                # code...
+            }
+            $query = 'START template=node(' . $eltId . ') '
+                    . ' MATCH  template-[rel]-other  '
+                    . ' DELETE rel,template ';
+
+            $result = $cypher->statement($query)->execute();
             $wsAnswer["result"] = "success";
             echo json_encode($wsAnswer);
             break;
@@ -526,7 +538,6 @@ try {
                         $query .= "RETURN ";
                     }
                     $query .= "n$j";
-                    $j++;
                 }
             }
 
@@ -542,6 +553,26 @@ try {
             echo json_encode($wsAnswer);
             break;
 
+        case "runQuery":
+            header("Content-type: application/json");
+            $query = getFromPost("query", "");
+            //create query
+            $result = $cypher->statement($query)->execute();
+            $wsAnswer["content"] = $result[0];
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+        break;
+        case "deleteSavedView":
+            header("Content-type: application/json");
+            $viewId = getFromPost("viewUniqueId", "");
+            //create query
+            $result = $cypher->statement(
+                            'MATCH (view{uniqueId:"' . $viewId . '"})-[rel]-other '
+                            . ' DELETE rel,view '
+                    )->execute();
+            $wsAnswer["result"] = "success";
+            echo json_encode($wsAnswer);
+        break;
         case "getCypherGraph":
             header("Content-type: application/json");
 

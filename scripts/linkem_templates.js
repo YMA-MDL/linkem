@@ -29,6 +29,8 @@ function nodeTemplateList(DOM) {
 
     this.edgeTemplateList = this.DOM.find("#edgeTemplateSelection");
 
+    this.nodeTemlateLabelList = this.DOM.find("#nodeLabelSelection");
+
     this.edgeSourceList = this.DOM.find("#edgeTemplateSource");
 
     this.edgeTargetList = this.DOM.find("#edgeTemplateTarget");
@@ -63,7 +65,7 @@ function nodeTemplateList(DOM) {
                 "properties": {
                     "_name": templateName,
                     "_label": "_name",
-                    "_id":data.id
+                    "_id": data.id
                 }
             };
             that.nodeTemplates.push(new nodeTemplate(nodeTemplateJson));
@@ -74,6 +76,13 @@ function nodeTemplateList(DOM) {
         });
     };
 
+    this.getTemplateByName = function(templateName){
+            for (var i = 0; i < that.nodeTemplates.length; i++) {
+                if (that.nodeTemplates[i].name === templateName){
+                    return that.nodeTemplates[i];
+                }
+            }
+    };
     this.addNewEdgeTemplate = function (templateName) {
         $.post(ajaxUrl, {
             action: "edge_template_add",
@@ -83,9 +92,9 @@ function nodeTemplateList(DOM) {
                 "properties": {
                     "_name": templateName,
                     "_label": "_name",
-                    "_sourceType": "",
-                    "_targetType": "",
-                    "_id":data.id
+                    "_sourceType": [],
+                    "_targetType": [],
+                    "_id": data.id
                 }
             };
             that.edgeTemplates.push(new edgeTemplate(edgeTemplateJson));
@@ -108,7 +117,6 @@ function nodeTemplateList(DOM) {
         that.nodeTemplateList.html(options);
         that.nodeTemplateList.prepend('<option selected value="emptyOption"></option>');
         that.nodeTemplateUsageListWithEmpty.html(options);
-        that.nodeTemplateUsageListWithEmpty.prepend('<option selected value="emptyOption"></option>');
         that.nodeTemplateUsageList.html(options);
     };
 
@@ -156,10 +164,10 @@ function nodeTemplateList(DOM) {
                 );
         that.templatePropertiesDOM.find("select#typeFor" + propName).val(propType);
         that.templatePropertiesDOM.find("select#typeFor" + propName).change(function () {
-            if (that.selected.type==='node'){
-            that.nodeTemplates[that.selected.id].updatePropType(propName, $(this).val());
-            }else{
-            that.edgeTemplates[that.selected.id].updatePropType(propName, $(this).val());
+            if (that.selected.type === 'node') {
+                that.nodeTemplates[that.selected.id].updatePropType(propName, $(this).val());
+            } else {
+                that.edgeTemplates[that.selected.id].updatePropType(propName, $(this).val());
             }
         });
     };
@@ -184,6 +192,7 @@ function nodeTemplateList(DOM) {
     this.addNodeButton.click(function () {
         var nodeTemplateName = prompt("Please enter the node template name", "");
         if (nodeTemplateName != null) {
+            nodeTemplateName=nodeTemplateName.convert_case();
             that.addNewNodeTemplate(removeDiacritics(nodeTemplateName));
         }
     });
@@ -191,24 +200,41 @@ function nodeTemplateList(DOM) {
     this.addEdgeButton.click(function () {
         var edgeTemplateName = prompt("Please enter the edge template name", "");
         if (edgeTemplateName != null) {
+            edgeTemplateName=edgeTemplateName.convert_case();
             that.addNewEdgeTemplate(removeDiacritics(edgeTemplateName));
         }
     });
 
     this.edgeSourceList.change(function () {
-        var selection = $(this).val();
-        that.edgeTemplates[that.selected.id].updateSource(that.nodeTemplates[selection].name);
+        var selection = [];
+
+        $(this).find(":selected").each(function () {
+            selection.push($(this).text());
+        });
+        that.edgeTemplates[that.selected.id].updateSource(selection);
     });
 
     this.edgeTargetList.change(function () {
-        var selection = $(this).val();
-        that.nodeTemplates[selection].name;
-        that.edgeTemplates[that.selected.id].updateTarget(that.nodeTemplates[selection].name);
+        var selection = [];
+
+        $(this).find(":selected").each(function () {
+            selection.push($(this).text());
+        });
+        that.edgeTemplates[that.selected.id].updateTarget(selection);
+    });
+
+    this.nodeTemlateLabelList.change(function(){
+        var selection=[];
+        $(this).find(":selected").each(function () {
+            selection.push($(this).text());
+        });
+        that.nodeTemplates[that.selected.id].updatePropType("_label",selection.join());
     });
 
     this.nodeTemplateList.change(function () {
         var selection = $(this).val();
         $("#templateNodeSettings").removeClass("hidden");
+        $("#edgeTemplateSelection").val("");
         $("#templateEdgeSettings").addClass("hidden");
         if (selection === "emptyOption") {
             // empty name
@@ -230,11 +256,15 @@ function nodeTemplateList(DOM) {
             // fill label
             var labelSelectionList = '';
             for (var key in that.nodeTemplates[selection].properties) {
-                labelSelectionList += "<option value='" + key + "'>" + key + "</option>";
+                if (!(key.startsWith("_"))){
+                    labelSelectionList += "<option value='" + key + "'>" + key + "</option>";
+                }
             }
             that.DOM.find("#nodeLabelSelection").html(labelSelectionList);
             // set label selected
-
+            $.each(that.nodeTemplates[selection].label.split("-"), function (i, e) {
+                 that.DOM.find("#nodeLabelSelection option[value='"+e+"']").prop("selected", true);
+            });
             // fill properties
             /// build property type list
 
@@ -252,6 +282,7 @@ function nodeTemplateList(DOM) {
             that.DOM.find(".addTemplateProperty").click(function () {
                 var nodeTemplatePropName = prompt("Please enter a property name", "");
                 if (nodeTemplatePropName !== null) {
+                    nodeTemplatePropName=nodeTemplatePropName.convert_case();
                     that.nodeTemplates[that.selected.id].addNewProperty(nodeTemplatePropName, that);
                     that.addPropertyEntry(nodeTemplatePropName, 'string');
                 }
@@ -261,9 +292,6 @@ function nodeTemplateList(DOM) {
                 var propertyName = $(this).closest("tr").attr("propertyName");
                 that.removePropFromTemplate(selection, propertyName);
             });
-
-
-
             // fill images
             that.pictureDomSelector.attr("src", that.nodeTemplates[selection].image);
         }
@@ -274,6 +302,7 @@ function nodeTemplateList(DOM) {
     this.edgeTemplateList.change(function () {
         var selection = $(this).val();
         $("#templateNodeSettings").addClass("hidden");
+        $("#nodeTemplateSelection").val("");
         $("#templateEdgeSettings").removeClass("hidden");
         if (selection === "emptyOption") {
             // empty name
@@ -291,12 +320,12 @@ function nodeTemplateList(DOM) {
 
             that.DOM.find("#edgeLabelSelection").html(labelSelectionList);
             that.DOM.find("#edgeLabelSelection").val(that.edgeTemplates[selection].label);
-            that.DOM.find("#edgeTemplateSource option").filter(function () {
-                return $(this).text() === that.edgeTemplates[selection].source;
-            }).prop('selected', true);
-            that.DOM.find("#edgeTemplateTarget option").filter(function () {
-                return $(this).text() === that.edgeTemplates[selection].target;
-            }).prop('selected', true);
+            $.each(that.edgeTemplates[selection].source.split(","), function (i, e) {
+                 that.DOM.find("#edgeTemplateSource option[name='"+e+"']").prop("selected", true);
+            });
+            $.each(that.edgeTemplates[selection].target.split(","), function (i, e) {
+                 that.DOM.find("#edgeTemplateTarget option[name='"+e+"']").prop("selected", true);
+            });
             // fill properties
             /// build property type list
 
@@ -314,6 +343,7 @@ function nodeTemplateList(DOM) {
             that.DOM.find(".addTemplateProperty").click(function () {
                 var edgeTemplatePropName = prompt("Please enter a property name", "");
                 if (edgeTemplatePropName != null) {
+                    edgeTemplatePropName=edgeTemplatePropName.convert_case();
                     that.edgeTemplates[that.selected.id].addNewProperty(edgeTemplatePropName, that);
                     that.addPropertyEntry(edgeTemplatePropName, 'string');
                 }
@@ -423,6 +453,20 @@ function nodeTemplate(json) {
             console.log(err);
         });
     };
+    this.updateLabel = function (label,type) {
+        $.post(ajaxUrl, {
+            action: "node_template_updateLabel",
+            label: label.join(),
+            type :that.properties._name,
+            nodeId: that.properties._id
+        }).success(function (data) {
+            console.log("Yay! label updated");
+            //update all graphs
+
+        }).fail(function (err) {
+            console.log(err);
+        });
+    };
 }
 
 /*************************
@@ -487,10 +531,10 @@ function edgeTemplate(json) {
         $.post(ajaxUrl, {
             action: "edge_template_updateProperty",
             propertyName: "_target",
-            propertyValue: nodeTypeName,
+            propertyValue: nodeTypeName.join(),
             nodeId: that.properties._id
         }).success(function (data) {
-            that.target = nodeTypeName;
+            that.target = nodeTypeName.join();
         }).fail(function (err) {
             console.log(err);
         });
@@ -500,10 +544,10 @@ function edgeTemplate(json) {
         $.post(ajaxUrl, {
             action: "edge_template_updateProperty",
             propertyName: "_source",
-            propertyValue: nodeTypeName,
+            propertyValue: nodeTypeName.join(),
             nodeId: that.properties._id
         }).success(function (data) {
-            that.source = nodeTypeName;
+            that.source = nodeTypeName.join();
         }).fail(function (err) {
             console.log(err);
         });

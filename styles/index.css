@@ -3,7 +3,7 @@ To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
 and open the template in the editor.
 */
-/* 
+/*
     Created on : 7 juin 2015, 11:51:38
     Author     : YMA
 */
@@ -37,6 +37,38 @@ and open the template in the editor.
     position: relative;
 }
 
+.graphControl.center{
+    z-index: 1000;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: 60px;
+    right: 70px;
+    border-radius: 3px;
+    border: solid 1px black;
+        background: url("../images/graphCenter.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+}
+.graphControl.fit{
+    z-index: 1000;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: 60px;
+    right: 110px;
+    border-radius: 3px;
+    border: solid 1px black;
+        background: url("../images/graphFit.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+}
+.graphControl:hover{
+    border: dotted 2px blue;
+    background-color: #ddd;
+}
 
 .switchGridGraph{
     z-index: 1000;
@@ -44,7 +76,7 @@ and open the template in the editor.
     width: 32px;
     position: absolute;
     top: 60px;
-    right: 25px;
+    right: 30px;
     border-radius: 3px;
     border: solid 1px black;
 }

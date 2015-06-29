@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -12,16 +12,34 @@ ajaxUrl = "ajax/Ajax.php";
 function Node(nodeType) {
 
     // properties
-    
+
     var that = this;
 
     this.properties = {};
-    
+
+    this.label = "";
+
     this.type = nodeType;
-    
+
     // functions
-    
-    /// initialize
+
+    this.setLabel = function(){
+        var nodeTemplate = nodeTemplateList.getTemplateByName(that.type);
+        if (nodeTemplate.label !== undefined){
+            var labels = nodeTemplate.label.split(',');
+            labelValueArray = [];
+            for (var i = 0; i < labels.length; i++) {
+                if (that.properties[labels[i]] != undefined){
+                labelValueArray.push(that.properties[labels[i]]);
+                }else {
+                    labelValueArray.push ("");
+                }
+            }
+            that.label = labelValueArray.join("-");
+        }
+    };
+
+
     this.createInDb = function () {
         $.post(ajaxUrl, {
             action: "node_add",
@@ -31,7 +49,7 @@ function Node(nodeType) {
             // when success add the node to the graph
             // create the node object
             // add it to the graph
-            console.log(data);
+
         }).fail(function (err) {
             console.log(err);
         });
@@ -46,17 +64,17 @@ function Node(nodeType) {
                     }
                 }
             }
-        }  
+        }
     };
-    
+
     this.createId = function () {
         that.id = guid();
     };
-    
+
     this.retrieveId = function(){
         that.id = that.properties.uniqueId;
     };
-    
+
 
     this.addToGraph = function (graph) {
         graph.graphAddNode(that.type, that.id);
@@ -72,12 +90,14 @@ function Node(nodeType) {
             propName: propName,
             propValue: propValue
         }).success(function (data) {
-            // when success delete the node from the graph
+            // when success update the node from the graph
             that.properties[propName] = propValue;
+            that.setLabel();
+            graphsSetMgr.updateGraphItemLabels(that.id,that.label);
         }).fail(function (err) {
             console.log(err);
         });
-        
+
     };
 
     this.deleteNode = function () {
@@ -90,6 +110,5 @@ function Node(nodeType) {
             console.log(err);
         });
     };
+    /// initialize
 }
-
-

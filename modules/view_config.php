@@ -83,9 +83,9 @@ $json = json_decode($data, true);
         <div id="collapseCustomQuery" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingCustomQuery">
             <div class="panel-body">
                 <h4>Cypher Query</h4>
-                <textarea class="form-control" rows="4" ></textarea>
+                <h5>Match...</h5>
+                <textarea class="form-control" rows="4" id="CypherRunQuery" placeholder="Only enter the Match criterias"></textarea>
                 <button class="btn btn-primary btn-block " id="CypherRunButton">Run</button>
-
             </div>
         </div>
     </div>

@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -23,7 +23,7 @@ $(document).ready(function () {
 });
 
 /*
- * UI EVENTS 
+ * UI EVENTS
  */
 
 
@@ -37,12 +37,14 @@ $("#propertyAddButton").click(function () {
         if (activeGraph.nodeCollection.singleSelectionType === "node") {
             var propName = prompt("Please enter the property name", "");
             if (propName != null) {
+                propName=propName.convert_case();
                 propertyList.addPropertyField(propName, "");
                 activeGraph.nodeCollection.selectedNode.properties[propName] = "";
             }
         } else {
             var propName = prompt("Please enter the property name", "");
             if (propName != null) {
+                propName=propName.convert_case();
                 propertyList.addPropertyField(propName, "");
                 activeGraph.nodeCollection.selectedEdge.properties[propName] = "";
             }
@@ -55,16 +57,17 @@ $("#propertyAddButton").click(function () {
 
 
 var contextMenu = '<div id="graphCtxMenu" class="list-group"> ';
-contextMenu += '<a href="#" class="list-group-item list-group-item-warning" id="contextDetachElement"><span class="glyphicon glyphicon-minus" ></span> Detach</a>';
-contextMenu += '<a href="#" class="list-group-item list-group-item-danger" id="contextDeleteElement"><span class="glyphicon glyphicon-trash" ></span> Delete</a>';
+contextMenu += '<a  class="list-group-item list-group-item-warning" id="contextDetachElement"><span class="glyphicon glyphicon-minus" ></span> Detach</a>';
+contextMenu += '<a  class="list-group-item list-group-item-danger" id="contextDeleteElement"><span class="glyphicon glyphicon-trash" ></span> Delete</a>';
 contextMenu += '</div>';
 
-var contextMenuItem = '<a href="#" class="list-group-item list-group-item-info customContextItemMenu"></a>';
+var contextMenuItem = '<a  class="list-group-item list-group-item-info customContextItemMenu"></a>';
+var contextLinkItem = '<a class="list-group-item " id="contextGetElementLinks"><span class="glyphicon glyphicon-link" ></span> get relationships</a>';
 
 $("#createItemOnView").click(function () {
     // get select value
     var nodeTypeValue = $("#newItemTypeSelection").val();
-    // get active graph 
+    // get active graph
     var activeGraph = getActiveGraph();
     // create the node in collection
     var newNode = new Node(nodeTemplateList.nodeTemplates[nodeTypeValue].name);
@@ -78,7 +81,7 @@ $("#createItemOnView").click(function () {
 
 $("#searchNodesByType").click(function () {
 
-    // get nodeType 
+    // get nodeType
     var nodeTypeIndex = $("#OpenNodeTypeSelection").val();
     var nodeTypeName = nodeTemplateList.nodeTemplates[nodeTypeIndex].name;
     console.log(nodeTypeName);
@@ -98,13 +101,8 @@ $("#searchNodesByType").click(function () {
             }
         }
 
-
-
         var searchGrid = new grid(nodeTypeName);
 
-
-        console.log(data);
-        console.log(searchGrid.columns);
         // launch datatable
 
         var columnsArrayDefaultContent = [];
@@ -134,11 +132,7 @@ $("#searchNodesByType").click(function () {
             for (var i = 0; i < searchTable.rows('.info').data().length; i++) {
                 queryArray.push(searchTable.rows('.info').data()[i].uniqueId);
             }
-            
-            
-            
         });
-
 
         // open modal
         $('#searchByType').modal();
@@ -147,6 +141,56 @@ $("#searchNodesByType").click(function () {
     });
 
 });
+
+$("#delEdgeTemplate").click(function(){
+    var edgeTemplate = nodeTemplateList.edgeTemplates[$("#edgeTemplateSelection").val()];
+    $.post(ajaxUrl,{
+        action:"template_delete",
+        type: "edge",
+        eltId: edgeTemplate.properties._id
+    }).success(function(data){
+        $("#edgeTemplateSelection option[value='"+$("#edgeTemplateSelection").val()+"']").remove();
+    }).fail(function(err){
+        console.log(err);
+    });
+});
+
+$("#delNodeTemplate").click(function(){
+    var nodeTemplate = nodeTemplateList.nodeTemplates[$("#nodeTemplateSelection").val()];
+    $.post(ajaxUrl,{
+        action:"template_delete",
+        type: "node",
+        eltId: nodeTemplate.properties._id
+    }).success(function(data){
+        $("#nodeTemplateSelection option[value='"+$("#nodeTemplateSelection").val()+"']").remove();
+    }).fail(function(err){
+        console.log(err);
+    });
+
+});
+
+$("#CypherRunButton").click(function(){
+   var cypherQuery = $("#CypherRunQuery").val();
+    // validate cypher code
+    if (cypherQuery.indexOf("DELETE")>-1){
+        standardNotification("you can only write reading query here!", "danger");
+    }else if (cypherQuery.indexOf("SET")>-1){
+        standardNotification("you can only write reading query here!", "danger");
+
+    } else {
+        $.post(ajaxUrl, {
+            action: "runCypherQuery"
+        }).success(function (data) {
+
+        }).fail(function (err) {
+            console.log(err);
+        });
+        standardNotification("OK","success");
+    }
+
+   // query and add to new graph
+});
+
 
 $("#deleteElt").click(function () {
     var ag = getActiveGraph();

@@ -30,6 +30,8 @@ and open the template in the editor.
         <link href="vendor/datatable/css/dataTables.bootstrap.default.css" rel="stylesheet">
         <link href="vendor/datatable/css/dataTables.bootstrap.css" rel="stylesheet">
         <link href="vendor/datatable/css/dataTables.colVis.css" rel="stylesheet">
+        <!-- multiselect -->
+        <link rel="stylesheet" href="vendor/multiselect/bootstrap-multiselect.css" type="text/css"/>
 
     </head>
     <body>
@@ -80,5 +82,7 @@ and open the template in the editor.
     <script src="vendor/datatable/js/dataTables.bootstrap.js"></script>
     <script src="vendor/datatable/js/dataTables.fixedHeader.js"></script> 
     <script src="vendor/datatable/js/dataTables.colVis.js"></script> 
+    <!-- multiselect -->
+        <script type="text/javascript" src="vendor/multiselect/bootstrap-multiselect.js"></script>
 
 </html>

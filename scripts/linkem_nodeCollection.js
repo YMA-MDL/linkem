@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -35,7 +35,7 @@ function nodeCollection() {
     };
 
     this.selectNode = function (nodeId) {
-        // list propertie
+        // list properties
         propertyList.loadProperties(allNodes[nodeId].properties);
         propertyList.switchPropertyTargetType("Node");
         propertyList.enableActions();
@@ -45,7 +45,7 @@ function nodeCollection() {
         that.selectedEdge = null;
     };
     this.selectGroupedNodes = function () {
-        // list propertie
+        // list properties
         propertyList.emptyMode();
         propertyList.switchPropertyTargetType("Node");
         propertyList.disableActions();
@@ -57,8 +57,7 @@ function nodeCollection() {
     };
 
     this.selectEdge = function (edgeId) {
-        // list propertie
-        console.log(edgeId);
+        // list properties
         propertyList.loadProperties(allEdges[edgeId].properties);
         propertyList.switchPropertyTargetType("Edge");
         propertyList.enableActions();
@@ -77,19 +76,19 @@ function nodeCollection() {
     };
 
     this.deleteNode = function (node) {
-
         // in db
         $.post(ajaxUrl, {
             action: "node_delete",
             uniqueId: node.id
         }).success(function (data) {
+            console.log(data);
             // delete in collection
             for (var i = 0; i < graphsSetMgr.openGraphList.length; i++) {
                 var ag = graphsSetMgr.openGraphList[i];
                 ag.nodeCollection.nodeIds.splice(that.nodeIds.indexOf(node.id), 1);
+                ag.cy.$("[id='" + node.id + "']").remove();
                 delete ag.nodeCollection.nodes[node.id];
                 delete allNodes[node.id];
-                ag.cy.$("[id='" + ag.nodeCollection.selectedNode.id + "']").remove();
             }
         }).fail(function (err) {
             console.log(err);

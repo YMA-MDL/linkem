@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,11 +8,11 @@
 // Common Table Builders
 
 function tableAPI_addATable(DOMTarget,idRef,Class, headFoot){
-    
+
 }
 
 function tableAPI_addAColumn(){
-    
+
 }
 
 // others
@@ -150,7 +150,25 @@ var defaultDiacriticsRemovalap = [
 
     // "what?" version ... http://jsperf.com/diacritics/12
     function removeDiacritics (str) {
-        return str.replace(/[^\u0000-\u007E]/g, function(a){ 
-           return diacriticsMap[a] || a; 
+        return str.replace(/[^\u0000-\u007E]/g, function(a){
+           return diacriticsMap[a] || a;
         });
-    }    
+    }
+
+
+    String.prototype.convert_case = function() {
+        return this.substr(0,1).toUpperCase() +  this.substr(1).toLowerCase();
+    }
+
+
+/**********************************************************
+    Handling list
+***********************************************************/
+
+function selectList(){
+
+}
+
+function selectListItem(){
+    
+}

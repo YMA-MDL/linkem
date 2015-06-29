@@ -6,7 +6,7 @@ var graphStylesheet = [
         selector: 'node',
         css: {
             'shape': 'roundrectangle',
-            'content': 'data(brand)',
+            'content': 'data(label)',
             'text-valign': 'top',
             'text-halign': 'center',
             'text-transform': 'uppercase',
@@ -24,9 +24,14 @@ var graphStylesheet = [
         css: {
             'target-arrow-shape': 'triangle',
             'content': 'data(type)',
-            'width': 10,
+            'width': 12,
             'line-color': '#337ab7',
-            'target-arrow-color': '#337ab7'
+            'target-arrow-color': '#337ab7',
+            'edge-text-rotation':'autorotate',
+            'font-size': 20,
+            'color': 'white',
+            'text-outline-color':'black',
+            'text-outline-width': 2
         }
     }, {
         selector: 'node:selected',
@@ -90,7 +95,7 @@ styleDefinitions['arbor'] = {
     ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
 
     // callbacks on layout events
-    ready: undefined, // callback on layoutready 
+    ready: undefined, // callback on layoutready
     stop: undefined, // callback on layoutstop
 
     // forces used by arbor (use arbor default on undefined)
@@ -176,23 +181,37 @@ function graphSet() {
         });
     };
 
-    this.openSelectedSavedView = function (viewNumber) {
-        var graphViewId = savedViews[viewNumber];
+    this.updateGraphItemLabels = function (id,label){
+        for (var i = 0; i < that.openGraphList.length; i++) {
+            that.openGraphList[i].cy.getElementById(id).data('label', label);
+        }
+    };
+
+    this.openSelectedSavedView = function (graphViewObject) {
         $.post(ajaxUrl, {
             action: "runQuery",
-            viewId: graphViewId
+            query: graphViewObject.query
         }).success(function (data) {
-
+            console.log(data);
         }).fail(function (err) {
             console.log(err);
         });
     };
-    this.deleteSelectedSavedView = function (viewNumber) {
-        var graphViewId = savedViews[viewNumber];
+    this.deleteSelectedSavedView = function (viewUid) {
         $.post(ajaxUrl, {
             action: "deleteSavedView",
-            viewId: graphViewId
+            viewUniqueId: viewUid
         }).success(function (data) {
+            // delete view
+            var listindex = -1;
+            for(var i=0;i<that.savedViews.length;i++){
+                if (that.savedViews[i].uid===viewUid){
+                    that.savedViews.splice(i, 1);
+                    listindex = i;
+                }
+            }
+            // update view list
+            $("#savedViewsList option:eq("+listindex+")").remove();
 
         }).fail(function (err) {
             console.log(err);
@@ -223,10 +242,11 @@ function graphSet() {
             that.closeView(clickedTabId);
         });
         newTab.TabDOMElement.find(".trashTab").click(function () {
-            var clickedTabId = $(this).closest("li").attr("graphId");
+            var graphViewObjectUID = $(this).closest("li").attr("graphId");
             // delete view
+            that.deleteSelectedSavedView(graphViewObjectUID);
             // close view
-            that.closeView(clickedTabId);
+            that.closeView(graphViewObjectUID);
         });
         newTab.TabDOMElement.find("a").dblclick(function () {
             var clickedTabId = $(this).closest("li").attr("graphId");
@@ -239,11 +259,14 @@ function graphSet() {
 
     // UI events
     $("#loadSavedView").click(function () {
-        that.openSelectedSavedView($("#savedViewsList").val());
+        var graphViewObject = that.savedViews[$("#savedViewsList").val()];
+        that.openSelectedSavedView(graphViewObject);
     });
 
     $("#deleteSavedView").click(function () {
-        that.deleteSelectedSavedView($("#savedViewsList").val());
+        var graphViewObject = that.savedViews[$("#savedViewsList").val()];
+        that.deleteSelectedSavedView(graphViewObject.uid);
+        that.getSavedViews();
     });
 
 
@@ -285,6 +308,7 @@ function Graph() {
     this.connectionProcess = {
         source: null,
         target: null,
+        targetTypes: [],
         type: "",
         status: "idle"
     };
@@ -336,6 +360,7 @@ function Graph() {
             viewId: that.id,
             viewState: viewState
         }).success(function (data) {
+            graphsSetMgr.getSavedViews();
         }).fail(function (err) {
             console.log(err);
         });
@@ -357,10 +382,11 @@ function Graph() {
     this.addGraphTab = function (isNew) {
         if (isNew) {
             that.createViewInDb();
+            graphsSetMgr.getSavedViews();
         }
         var tabDomId = that.id;
         $("#addTabHeader").before('<li role="presentation" graphId="' + tabDomId + '" >\n\
-<a href="#' + tabDomId + '" aria-controls="defaulttView" role="tab" data-toggle="tab">' + tabDomId + '\
+<a href="#' + tabDomId + '" tabid="'+tabDomId+'" aria-controls="defaulttView" role="tab" data-toggle="tab">' + tabDomId + '\
 <span class="glyphicon glyphicon-remove tabActions closeTab" ></span>\n\
 <span class="glyphicon glyphicon-trash tabActions trashTab" ></span></a></li>');
         $("#addTabContent").before('<div role="tabpanel" class="tab-pane" id="' + tabDomId + '"></div>');
@@ -380,6 +406,12 @@ function Graph() {
                     that.graphOrGrid === "grid";
                     that.gridViews.load(that.nodeCollection, that.DOMElement.children(".gridView"));
                 }
+            });
+            that.DOMElement.children(".graphControl.fit").click(function () {
+                that.cy.fit();
+            });
+            that.DOMElement.children(".graphControl.center").click(function () {
+                that.cy.center();
             });
         }, 500);
         $("#createItemOnView").removeClass("disabled");
@@ -422,22 +454,28 @@ function Graph() {
                             that.nodeCollection.selectNode(evt.cyTarget.id());
                             $(".expendEdges").removeClass("disabled");
                             if (that.connectionProcess.status === "processing") {
-                                that.connectionProcess.target = evt.cyTarget.id();
-                                console.log(that.connectionProcess);
-                                that.nodeCollection.createRelationship(that.connectionProcess.source, that.connectionProcess.target, that.connectionProcess.type);
-                                $("#sourceItemSelection").val("");
-                                $("#targetItemSelection").val("");
-                                $("#relationshipName").val("");
-                                $(this).addClass("disabled");
-                                that.connectionProcess.status = "idle";
+                                if (that.connectionProcess.targetTypes.indexOf(that.nodeCollection.selectedNode.type) > -1) {
+                                    that.connectionProcess.target = evt.cyTarget.id();
+                                    that.nodeCollection.createRelationship(that.connectionProcess.source, that.connectionProcess.target, that.connectionProcess.type);
+                                    $("#sourceItemSelection").val("");
+                                    $("#targetItemSelection").val("");
+                                    $("#relationshipName").val("");
+                                    $(this).addClass("disabled");
+                                    that.connectionProcess.status = "idle";
+                                } else {
+                                    $("#sourceItemSelection").val("");
+                                    $("#targetItemSelection").val("");
+                                    $("#relationshipName").val("");
+                                    $(this).addClass("disabled");
+                                    that.connectionProcess.status = "idle";
+                                    standardNotification("relationship Not allowed", "warning");
+                                }
                             }
-
                         } else if (evt.cyTarget[0].group() === "edges") {
                             that.nodeCollection.selectEdge(evt.cyTarget.id());
                         }
                     } else {
                         that.nodeCollection.selectGroupedNodes();
-                        console.log(that.cy.$(":selected"));
                         //that.nodeCollection.selectCollectionNode(that.cy.$(":selected"));
                     }
                 } else {
@@ -445,10 +483,10 @@ function Graph() {
                 }
             });
             that.cy.on('tap', function (evt) {
-                console.log("tap");
                 if ((evt.cy == evt.cyTarget)) {
                     that.nodeCollection.unselectNodes();
                     $(".expendEdges").addClass("disabled");
+                    that.connectionProcess.status = "idle";
 
                 }
                 if ($("#graphCtxMenu").length > 0) {
@@ -459,7 +497,7 @@ function Graph() {
 
             that.cy.on('cxttapend ', function (evt) {
                 if (!(evt.cy == evt.cyTarget)) {
-                    // handle contextMenu 
+                    // handle contextMenu
 
                     var currentMousePos = {};
                     currentMousePos.x = event.pageX;
@@ -471,16 +509,20 @@ function Graph() {
                     //fill the context menu with available relationships
                     $(".customContextItemMenu").remove();
 
+                    if ($("#contextGetElementLinks").length < 1) {
+                        $("#graphCtxMenu").prepend(contextLinkItem);
+                    }
                     if (evt.cyTarget[0].group() === "nodes") {
                         that.nodeCollection.selectNode(evt.cyTarget.id());
                         for (var i = 0; i < nodeTemplateList.edgeTemplates.length; i++) {
-                            if (nodeTemplateList.edgeTemplates[i].source === that.nodeCollection.selectedNode.type) {
+                            if (nodeTemplateList.edgeTemplates[i].source.indexOf(that.nodeCollection.selectedNode.type) > -1) {
                                 $("#graphCtxMenu").prepend(contextMenuItem);
                                 $("#graphCtxMenu").find(".customContextItemMenu:first()").html("connect to " + nodeTemplateList.edgeTemplates[i].target);
                                 $("#graphCtxMenu").find(".customContextItemMenu:first()").attr("title", "via " + nodeTemplateList.edgeTemplates[i].name);
                                 $("#graphCtxMenu").find(".customContextItemMenu:first()").attr("linkType", nodeTemplateList.edgeTemplates[i].name);
                                 $("#graphCtxMenu").find(".customContextItemMenu:first()").attr("target", nodeTemplateList.edgeTemplates[i].target);
                                 $("#graphCtxMenu").find(".customContextItemMenu:first()").attr("linkem_role", "connectTo");
+                                that.connectionProcess.targetTypes = nodeTemplateList.edgeTemplates[i].target;
                             }
                         }
                         $("[linkem_role='connectTo']").click(function () {
@@ -489,7 +531,13 @@ function Graph() {
                             $("#sourceItemSelection").val(evt.cyTarget.id());
                             that.connectionProcess.status = "processing";
                             that.connectionProcess.type = $(this).attr("linkType");
+
                             standardNotification("select a single node to build the relationship", "info");
+                            $("#graphCtxMenu").remove();
+                        });
+                        $("#contextGetElementLinks").click(function () {
+                            that.nodeCollection.loadRelationships(that, "both");
+                            $("#graphCtxMenu").remove();
                         });
                         $("#contextDetachElement").click(function () {
                             if (that.nodeCollection.selectedNode !== null) {
@@ -511,8 +559,8 @@ function Graph() {
                         $("#graphCtxMenu").css("top", currentMousePos.y);
                         $('#graphCtxMenu').dropdown();
                     }
-                    
-                     if (evt.cyTarget[0].group() === "edges") {
+
+                    if (evt.cyTarget[0].group() === "edges") {
                         that.nodeCollection.selectEdge(evt.cyTarget.id());
 
                         $("#contextDetachElement").click(function () {
@@ -553,16 +601,16 @@ function Graph() {
         graphElement.select();
     };
 
-    this.graphAddNode = function (type, id) {
+    this.graphAddNode = function (type, id,label) {
         that.cy.add({
             group: "nodes",
             classes: type,
-            data: {id: String(id), weight: 75},
+            data: {id: String(id), weight: 75,label:label},
             position: {x: 200, y: 200}
         });
         that.redrawGraph();
-        that.nodeCollection.nodeIds.push(id);
         that.saveView();
+        graphsSetMgr.getSavedViews();
     };
 
     this.graphAddNodeList = function (nodeList) {
@@ -580,7 +628,6 @@ function Graph() {
             position: {x: 200, y: 200}
         });
         that.redrawGraph();
-        that.nodeCollection.edgeIds.push(edgeId);
         that.saveView();
     };
 
@@ -606,21 +653,22 @@ function Graph() {
             var nodeType = nodes[i]["type"];
             var newNode = new Node(nodeType);
             newNode.properties = nodes[i];
+            newNode.setLabel();
             newNode.retrieveId();
             newNode.updateTemplateProperties();
-            that.nodeCollection.nodes[nodes[i].uniqueId] = newNode;
-            allNodes[nodes[i].uniqueId] = newNode;
-            console.log(allNodes);
+            that.nodeCollection.nodes[newNode.id] = newNode;
+            allNodes[newNode.id] = newNode;
             if (nodes[i].hasOwnProperty("uniqueId")) {
-                var nodeData = {id: String(nodes[i].uniqueId), weight: 75};
+                var nodeData = {id: String(newNode.id), weight: 75,label:newNode.label};
                 $.extend(nodeData, newNode.properties);
                 nodeList.push({
                     group: "nodes",
                     classes: nodeType,
                     data: nodeData,
-                    position: {x: 200, y: 200}
+                    position: {x: 200, y: 200},
+
                 });
-                that.nodeCollection.nodeIds.push(String(nodes[i].uniqueId));
+                that.nodeCollection.nodeIds.push(String(newNode.id));
             }
         }
         for (var i = 0; i < edges.length; i++) {
@@ -658,7 +706,6 @@ function Graph() {
 
     this.updateSelectedEltProperty = function (propName, propValue) {
         var selection = that.cy.$(":selected");
-        console.log(selection);
         if (selection.length == 1) {
             selection[0].data(propName, propValue);
         }
@@ -676,7 +723,6 @@ function viewGrids() {
     this.load = function (nodeCollection, viewDOM) {
         viewDOM.find("ul.nav").empty();
         viewDOM.find("div.tab-content").empty();
-        console.log(nodeCollection);
         var nodeTypes = [];
         // sort the nodeCollection Data
         for (var k in nodeCollection.nodes) {
@@ -685,14 +731,10 @@ function viewGrids() {
             }
         }
 
-        console.log("nodeTypes : " + nodeTypes.length);
-
         // build Divs and Grids
         for (var i = 0; i < nodeTypes.length; i++) {
             // build Grid
             that.grids[nodeTypes[i]] = new grid(nodeTypes[i]);
-
-
             // add the grid div
             if (i === 0) {
                 viewDOM.find("ul.nav").append('<li role="presentation" class="active"><a href="#' + nodeTypes[i] + '" aria-controls="home" role="tab" data-toggle="tab">' + nodeTypes[i] + '</a></li>');
@@ -707,10 +749,11 @@ function viewGrids() {
                 viewDOM.find("table#" + nodeTypes[i] + " tfoot tr").append("<th>" + that.grids[nodeTypes[i]].columns[j]['data'] + "</th>");
             }
 
-            // build content          
+            // build content
             for (var k in nodeCollection.nodes) {
                 var dataRow = {};
                 if (nodeCollection.nodes[k].type === nodeTypes[i]) {
+
                     for (var j = 0; j < that.grids[nodeTypes[i]].columns.length; j++) {
                         if (dataRow[nodeTypes[i]] === undefined) {
                             dataRow[nodeTypes[i]] = {};
@@ -720,22 +763,19 @@ function viewGrids() {
                         } else {
                             dataRow[nodeTypes[i]][that.grids[nodeTypes[i]].columns[j]['data']] = "";
                         }
-
                     }
                     that.grids[nodeTypes[i]].data.push(dataRow[nodeTypes[i]]);
                 }
             }
-
-
             // start the datatable
-            viewDOM.find("table#" + nodeTypes[i]).DataTable({
-                data: that.grids[nodeTypes[i]].data,
-                columns: that.grids[nodeTypes[i]].columns
-            });
-
+            console.log(that.grids[nodeTypes[i]].columns.length);
+            if (that.grids[nodeTypes[i]].columns.length>0){
+                viewDOM.find("table#" + nodeTypes[i]).DataTable({
+                    data: that.grids[nodeTypes[i]].data,
+                    columns: that.grids[nodeTypes[i]].columns
+                });
+            }
         }
-
-
     };
 }
 
@@ -763,6 +803,7 @@ function grid(nodeType) {
             }
         }
     };
+
 
 
     // events

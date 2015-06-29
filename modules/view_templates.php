@@ -49,7 +49,7 @@ $json = json_decode($data, true);
                     <input type="text" class="form-control" id="nodeTemplateName" />
 
                     <label>Label</label>
-                    <select class="form-control nodeTemplatePropList" id="nodeLabelSelection">
+                    <select class="form-control nodeTemplatePropList" id="nodeLabelSelection" multiple="multiple">
                         <option selected id="emptyOption"></option>
                     </select>
                 </div>
@@ -103,17 +103,12 @@ $json = json_decode($data, true);
                 <div class="panel-body">
                     <label>Name</label>
                     <input type="text" class="form-control" id="edgeTemplateName" />
-
-                    <label>Label</label>
-                    <select class="form-control nodeTemplatePropList" id="edgeLabelSelection">
-                        <option selected id="emptyOption"></option>
-                    </select>
                     <label>Source</label>
-                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateSource">
+                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateSource" multiple="multiple">
                         <option selected id="emptyOption"></option>
                     </select>
                     <label>Target</label>
-                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateTarget">
+                    <select class="form-control nodeTemplatePropListWithEmpty" id="edgeTemplateTarget" multiple="multiple">
                         <option selected id="emptyOption"></option>
                     </select>
                 </div>
